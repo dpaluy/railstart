@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.3.0] - 2025-11-22
+
+### Added
+- **CSS framework**: Added Sass option to CSS framework choices
+- **CSS framework**: Added "None (skip CSS setup)" option for skipping CSS configuration
+- **JavaScript bundler**: Added Bun as a JavaScript bundler option (Rails 8 native support)
+- **JavaScript bundler**: Added Vite (via vite_rails gem) with automatic post-installation setup
+- **JavaScript bundler**: Added "None (skip JavaScript)" option using `--skip-javascript` flag
+- **Test framework**: New test framework selection question (Minitest default, RSpec option)
+- **Post-action**: RSpec automatic setup (`bundle add rspec-rails` + `rails generate rspec:install`) when selected
+- **Post-action**: Vite Rails automatic setup (`bundle add vite_rails` + `bundle exec vite install`) when selected
+- **Command builder**: Choice-level `rails_flag` support for SELECT questions
+- **Command builder**: Different choices can now have different flags or no flag at all
+- **Tests**: Comprehensive test coverage for choice-level rails_flag feature
+
+### Changed
+- **JavaScript question**: Renamed prompt from "Which JavaScript bundler?" to "Which JavaScript approach?"
+- **Command builder**: SELECT questions now check for choice-level flags before falling back to question-level flags
+- **Command builder**: Vite choice doesn't add any rails flag (handled via post-action instead)
+- **Config**: JavaScript choices now use choice-level `rails_flag` instead of question-level for flexibility
+
+### Technical
+- Enhanced `CommandBuilder.process_select` to support per-choice flag configuration
+- Backward compatible with existing configs using question-level flags
+- All tests pass (33 runs, 97 assertions, 0 failures)
+- Rubocop clean (no offenses)
+
 ## [0.2.1] - 2025-11-22
 
 ### Fixed

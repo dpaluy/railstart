@@ -42,11 +42,27 @@ module Railstart
 
       def process_question_flags(flags, question, answer)
         case question["type"]
-        when "select", "yes_no", "input"
+        when "select"
+          process_select(flags, question, answer)
+        when "yes_no", "input"
           add_flags(flags, question, answer)
         when "multi_select"
           process_multi_select(flags, question, answer)
         end
+      end
+
+      def process_select(flags, question, answer)
+        # Check if the selected choice has a choice-level rails_flag
+        selected_choice = Array(question["choices"]).find { |choice| choice["value"] == answer }
+
+        if selected_choice && (selected_choice["rails_flag"] || selected_choice["rails_flags"])
+          # Use choice-level flag
+          add_flags(flags, selected_choice, answer)
+        elsif question["rails_flag"] || question["rails_flags"]
+          # Fall back to question-level flag
+          add_flags(flags, question, answer)
+        end
+        # If neither exists, no flag is added (e.g., for choices that don't need flags)
       end
 
       def process_multi_select(flags, question, answer)
