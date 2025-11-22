@@ -115,7 +115,7 @@ post_actions:
 
   - id: bundle_install
     name: "Install gems"
-    enabled: true
+    enabled: false
     prompt: "Run bundle install?"
     default: true
     if:
