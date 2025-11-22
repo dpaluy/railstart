@@ -114,7 +114,12 @@ module Railstart
       choices = question["choices"].map { |c| [c["name"], c["value"]] }
       default_val = find_default(question)
 
-      @prompt.select(question["prompt"], choices, default: default_val)
+      # TTY::Prompt expects 1-based index for default, not the value
+      default_index = if default_val
+                        question["choices"].index { |c| c["value"] == default_val }&.+(1)
+                      end
+
+      @prompt.select(question["prompt"], choices, default: default_index)
     end
 
     def ask_multi_select(question)
