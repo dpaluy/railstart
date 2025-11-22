@@ -34,7 +34,7 @@ questions:
     default: false
 
   - id: skip_git
-    default: false
+    default: true
 
   - id: skip_docker
     default: false
@@ -43,14 +43,17 @@ questions:
     default: false
 
 post_actions:
-  - id: init_git
-    enabled: true
-
-  - id: bundle_install
-    enabled: false
-
   - id: setup_vite
+    name: "Setup Vite Rails"
     enabled: true
+    command: "bundle add vite_rails && bundle install && bundle exec vite install"
 
   - id: setup_bundlebun
+    name: "Setup Bundlebun (Bun packaged as a gem)"
     enabled: true
+    command: "bundle add bundlebun && bundle install && bundle exec rake bun:install"
+
+  - id: init_git
+    name: "Initialize git repository"
+    enabled: true
+    command: "git init && git add . && git commit -m 'Initial commit with Vite + Bundlebun'"

@@ -56,8 +56,6 @@ questions:
       - name: Webpack
         value: webpack
         rails_flag: "--javascript=webpack"
-      - name: Vite (via vite_rails gem)
-        value: vite
       - name: None (skip JavaScript)
         value: none
         rails_flag: "--skip-javascript"
@@ -154,19 +152,3 @@ post_actions:
       question: test_framework
       equals: rspec
     command: "bundle add rspec-rails --group development,test && bundle exec rails generate rspec:install"
-
-  - id: setup_vite
-    name: "Setup Vite Rails"
-    enabled: true
-    if:
-      question: javascript
-      equals: vite
-    command: "bundle add vite_rails && bundle install && bundle exec vite install"
-
-  - id: setup_bundlebun
-    name: "Setup Bundlebun (Bun packaged as a gem)"
-    enabled: false
-    if:
-      question: javascript
-      equals: bun
-    command: "bundle add bundlebun && bundle install && bundle exec rake bun:install"

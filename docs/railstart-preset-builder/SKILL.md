@@ -176,19 +176,24 @@ questions:
 
 post_actions:
   - id: init_git
+    name: "Initialize git repository"
     enabled: true
-
-  - id: bundle_install
-    enabled: false
+    command: "git init && git add . && git commit -m 'Initial commit'"
 
   - id: setup_rspec
+    name: "Setup RSpec"
     enabled: false
+    command: "bundle add rspec-rails --group development,test && bundle exec rails generate rspec:install"
 
   - id: setup_vite
+    name: "Setup Vite Rails"
     enabled: false
+    command: "bundle add vite_rails && bundle install && bundle exec vite install"
 
   - id: setup_bundlebun
+    name: "Setup Bundlebun (Bun packaged as a gem)"
     enabled: false
+    command: "bundle add bundlebun && bundle install && bundle exec rake bun:install"
 ```
 
 ### Step 3: Override Defaults
@@ -223,23 +228,31 @@ questions:
 
 post_actions:
   - id: init_git
+    name: "Initialize git repository"
     enabled: true
+    command: "git init && git add . && git commit -m 'Initial commit'"
 ```
 
 ### Step 4: Enable Post-Actions
 
-Enable relevant post-actions based on your choices:
+Enable relevant post-actions based on your choices. **IMPORTANT:** Always include complete post-action definitions with `name` and `command`:
 
 ```yaml
 post_actions:
   - id: setup_vite
-    enabled: true  # If javascript = vite
+    name: "Setup Vite Rails"
+    enabled: true
+    command: "bundle add vite_rails && bundle install && bundle exec vite install"
 
   - id: setup_bundlebun
-    enabled: true  # If javascript = bun AND you want bundlebun
+    name: "Setup Bundlebun (Bun packaged as a gem)"
+    enabled: true
+    command: "bundle add bundlebun && bundle install && bundle exec rake bun:install"
 
   - id: setup_rspec
-    enabled: true  # If test_framework = rspec
+    name: "Setup RSpec"
+    enabled: true
+    command: "bundle add rspec-rails --group development,test && bundle exec rails generate rspec:install"
 ```
 
 ### Step 5: Test Preset
@@ -317,16 +330,19 @@ questions:
 
 post_actions:
   - id: init_git
+    name: "Initialize git repository"
     enabled: true
-
-  - id: bundle_install
-    enabled: false
+    command: "git init && git add . && git commit -m 'Initial commit'"
 
   - id: setup_vite
+    name: "Setup Vite Rails"
     enabled: true
+    command: "bundle add vite_rails && bundle install && bundle exec vite install"
 
   - id: setup_bundlebun
+    name: "Setup Bundlebun (Bun packaged as a gem)"
     enabled: true
+    command: "bundle add bundlebun && bundle install && bundle exec rake bun:install"
 ```
 
 **Use Case:** Building modern SPAs with fast HMR (Vite) and unified JavaScript runtime (Bundlebun)
@@ -381,10 +397,9 @@ questions:
 
 post_actions:
   - id: init_git
+    name: "Initialize git repository"
     enabled: true
-
-  - id: bundle_install
-    enabled: true
+    command: "git init && git add . && git commit -m 'Initial commit'"
 ```
 
 **Use Case:** Building JSON APIs without views or frontend assets
@@ -418,10 +433,14 @@ questions:
 
 post_actions:
   - id: init_git
+    name: "Initialize git repository"
     enabled: true
+    command: "git init && git add . && git commit -m 'Initial commit'"
 
   - id: setup_rspec
+    name: "Setup RSpec"
     enabled: true
+    command: "bundle add rspec-rails --group development,test && bundle exec rails generate rspec:install"
 ```
 
 **Use Case:** Teams preferring RSpec over Minitest for BDD-style testing
