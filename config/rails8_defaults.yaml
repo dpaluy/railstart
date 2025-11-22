@@ -1,0 +1,124 @@
+---
+# Railstart Rails 8 Default Configuration
+# This configuration defines all available questions and post-generation actions
+# Users can override this by creating ~/.config/railstart/config.yaml
+
+questions:
+  - id: database
+    type: select
+    prompt: "Which database?"
+    choices:
+      - name: SQLite
+        value: sqlite3
+        default: true
+      - name: PostgreSQL
+        value: postgresql
+      - name: MySQL
+        value: mysql
+    rails_flag: "--database=%<value>s"
+
+  - id: css
+    type: select
+    prompt: "Which CSS framework?"
+    choices:
+      - name: Tailwind
+        value: tailwind
+        default: true
+      - name: Bootstrap
+        value: bootstrap
+      - name: Bulma
+        value: bulma
+      - name: PostCSS (no framework)
+        value: postcss
+      - name: None
+        value: none
+    rails_flag: "--css=%{value}"
+
+  - id: javascript
+    type: select
+    prompt: "Which JavaScript bundler?"
+    choices:
+      - name: Importmap (default)
+        value: importmap
+        default: true
+      - name: esbuild
+        value: esbuild
+      - name: Webpack
+        value: webpack
+      - name: Rollup
+        value: rollup
+    rails_flag: "--javascript=%{value}"
+
+  - id: skip_features
+    type: multi_select
+    prompt: "Skip any features?"
+    choices:
+      - name: Action Mailer
+        value: action_mailer
+        rails_flag: "--skip-action-mailer"
+      - name: Action Mailbox
+        value: action_mailbox
+        rails_flag: "--skip-action-mailbox"
+      - name: Action Text
+        value: action_text
+        rails_flag: "--skip-action-text"
+      - name: Active Record
+        value: active_record
+        rails_flag: "--skip-active-record"
+      - name: Active Job
+        value: active_job
+        rails_flag: "--skip-active-job"
+      - name: Active Storage
+        value: active_storage
+        rails_flag: "--skip-active-storage"
+      - name: Action Cable
+        value: action_cable
+        rails_flag: "--skip-action-cable"
+      - name: Hotwire (Turbo + Stimulus)
+        value: hotwire
+        rails_flag: "--skip-hotwire"
+
+  - id: api_only
+    type: yes_no
+    prompt: "Generate API-only app? (no views, minimal middleware)"
+    default: false
+    rails_flag: "--api"
+
+  - id: skip_git
+    type: yes_no
+    prompt: "Skip git initialization?"
+    default: false
+    rails_flag: "--skip-git"
+
+  - id: skip_docker
+    type: yes_no
+    prompt: "Skip Docker setup?"
+    default: false
+    rails_flag: "--skip-docker"
+
+  - id: skip_bundle
+    type: yes_no
+    prompt: "Skip bundle install? (run manually later)"
+    default: false
+    rails_flag: "--skip-bundle"
+
+post_actions:
+  - id: init_git
+    name: "Initialize git repository"
+    enabled: true
+    prompt: "Initialize git and create first commit?"
+    default: true
+    if:
+      question: skip_git
+      equals: false
+    command: "git init && git add . && git commit -m 'Initial commit'"
+
+  - id: bundle_install
+    name: "Install gems"
+    enabled: true
+    prompt: "Run bundle install?"
+    default: true
+    if:
+      question: skip_bundle
+      equals: true
+    command: "bundle install"
