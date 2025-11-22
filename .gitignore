@@ -1,0 +1,18 @@
+/.bundle/
+/.yardoc
+/_yardoc/
+/coverage/
+/doc/
+/pkg/
+/tmp/
+
+# Mac finder artifacts
+.DS_Store
+
+AGENTS.md
+CLAUDE.md
+.claude/
+.worktrees/
+.repoprompt/
+.factory/
+.claude/
