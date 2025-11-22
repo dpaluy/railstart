@@ -162,3 +162,11 @@ post_actions:
       question: javascript
       equals: vite
     command: "bundle add vite_rails && bundle install && bundle exec vite install"
+
+  - id: setup_bundlebun
+    name: "Setup Bundlebun (Bun packaged as a gem)"
+    enabled: false
+    if:
+      question: javascript
+      equals: bun
+    command: "bundle add bundlebun && bundle install && bundle exec rake bun:install"

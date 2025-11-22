@@ -1,0 +1,56 @@
+---
+# Vite + Bundlebun Preset - Modern frontend with Vite and Bun packaged as a gem
+# This preset configures Rails with Vite for fast HMR and Bundlebun for unified JavaScript runtime
+
+questions:
+  - id: database
+    choices:
+      - name: PostgreSQL
+        value: postgresql
+        default: true
+
+  - id: css
+    choices:
+      - name: Tailwind
+        value: tailwind
+        default: true
+
+  - id: javascript
+    choices:
+      - name: Vite (via vite_rails gem)
+        value: vite
+        default: true
+
+  - id: test_framework
+    choices:
+      - name: Minitest (default)
+        value: minitest
+        default: true
+
+  - id: skip_features
+    default: []
+
+  - id: api_only
+    default: false
+
+  - id: skip_git
+    default: false
+
+  - id: skip_docker
+    default: false
+
+  - id: skip_bundle
+    default: false
+
+post_actions:
+  - id: init_git
+    enabled: true
+
+  - id: bundle_install
+    enabled: false
+
+  - id: setup_vite
+    enabled: true
+
+  - id: setup_bundlebun
+    enabled: true

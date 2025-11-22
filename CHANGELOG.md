@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Test framework**: New test framework selection question (Minitest default, RSpec option)
 - **Post-action**: RSpec automatic setup (`bundle add rspec-rails` + `rails generate rspec:install`) when selected
 - **Post-action**: Vite Rails automatic setup (`bundle add vite_rails` + `bundle exec vite install`) when selected
+- **Post-action**: Bundlebun optional setup (`bundle add bundlebun` + `rake bun:install`) for Bun packaged as a gem
+- **Preset**: New `vite-bun.yaml` preset for modern frontend with Vite + Bundlebun (use with `--preset vite-bun`)
 - **Command builder**: Choice-level `rails_flag` support for SELECT questions
 - **Command builder**: Different choices can now have different flags or no flag at all
 - **Tests**: Comprehensive test coverage for choice-level rails_flag feature
