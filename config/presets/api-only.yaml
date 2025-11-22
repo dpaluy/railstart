@@ -1,0 +1,46 @@
+---
+# API-Only Preset - Minimal Rails app for JSON APIs
+
+questions:
+  - id: database
+    choices:
+      - name: PostgreSQL
+        value: postgresql
+        default: true
+
+  - id: css
+    choices:
+      - name: None
+        value: none
+        default: true
+
+  - id: javascript
+    choices:
+      - name: Importmap (default)
+        value: importmap
+        default: true
+
+  - id: skip_features
+    default:
+      - action_mailer
+      - action_text
+      - hotwire
+
+  - id: api_only
+    default: true
+
+  - id: skip_git
+    default: false
+
+  - id: skip_docker
+    default: false
+
+  - id: skip_bundle
+    default: false
+
+post_actions:
+  - id: init_git
+    enabled: true
+
+  - id: bundle_install
+    enabled: true

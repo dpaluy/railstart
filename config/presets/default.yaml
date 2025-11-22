@@ -1,0 +1,45 @@
+---
+# Default Preset - Sensible defaults for quick start
+# This preset is automatically loaded when using --default flag without --preset
+# Can be overridden by user preset at ~/.config/railstart/presets/default.yaml
+
+questions:
+  - id: database
+    choices:
+      - name: PostgreSQL
+        value: postgresql
+        default: true
+
+  - id: css
+    choices:
+      - name: Tailwind
+        value: tailwind
+        default: true
+
+  - id: javascript
+    choices:
+      - name: Importmap (default)
+        value: importmap
+        default: true
+
+  - id: skip_features
+    default: []
+
+  - id: api_only
+    default: false
+
+  - id: skip_git
+    default: false
+
+  - id: skip_docker
+    default: false
+
+  - id: skip_bundle
+    default: false
+
+post_actions:
+  - id: init_git
+    enabled: true
+
+  - id: bundle_install
+    enabled: true

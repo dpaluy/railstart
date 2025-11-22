@@ -11,11 +11,13 @@ module Railstart
   # @example Run generator with provided config
   #   config = Railstart::Config.load
   #   Railstart::Generator.new("blog", config: config).run
+  # @example Run generator non-interactively
+  #   Railstart::Generator.new("blog", use_defaults: true).run
   class Generator
     #
     # @param app_name [String, nil] preset app name, prompted if nil
     # @param config [Hash, nil] injected config for testing, defaults to Config.load
-    # @param use_defaults [Boolean] skip interactive mode and use all defaults
+    # @param use_defaults [Boolean] skip interactive questions, use config defaults
     # @param prompt [TTY::Prompt] injectable prompt for testing
     def initialize(app_name = nil, config: nil, use_defaults: false, prompt: nil)
       @app_name = app_name
@@ -28,13 +30,25 @@ module Railstart
     #
     # Run the complete generation flow, prompting the user and invoking Rails.
     #
+    # Mode selection:
+    #   - use_defaults: false (default) → interactive wizard
+    #   - use_defaults: true → collect config defaults, show summary, confirm, run
+    #
     # @return [void]
     # @raise [Railstart::ConfigError, Railstart::ConfigValidationError] when configuration is invalid
-    # @example Run interactively using defaults or custom answers
-    #   Railstart::Generator.new.run
+    # @example Run interactively
+    #   Railstart::Generator.new("blog").run
+    # @example Run with defaults (noninteractive questions)
+    #   Railstart::Generator.new("blog", use_defaults: true).run
     def run
       ask_app_name unless @app_name
-      ask_questions
+
+      if @use_defaults
+        collect_defaults
+      else
+        ask_interactive_questions
+      end
+
       show_summary
       return unless confirm_proceed?
 
@@ -50,18 +64,13 @@ module Railstart
       end
     end
 
-    def ask_questions
-      if @use_defaults
-        collect_defaults
-      else
-        ask_interactive_questions
-      end
-    end
-
     def collect_defaults
       Array(@config["questions"]).each do |question|
+        next if should_skip_question?(question)
+
+        question_id = question["id"]
         default_value = find_default(question)
-        @answers[question["id"]] = default_value unless default_value.nil?
+        @answers[question_id] = default_value unless default_value.nil?
       end
     end
 
@@ -160,8 +169,6 @@ module Railstart
     end
 
     def confirm_proceed?
-      return true if @use_defaults
-
       @prompt.yes?("Proceed with app generation?")
     end
 
@@ -178,6 +185,7 @@ module Railstart
 
     def run_post_actions
       Dir.chdir(@app_name)
+
       Array(@config["post_actions"]).each { |action| process_post_action(action) }
       puts "\n✨ Rails app created successfully at ./#{@app_name}"
     rescue Errno::ENOENT
