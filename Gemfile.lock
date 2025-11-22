@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    railstart (0.1.0)
+    railstart (0.2.0)
       thor
       tty-prompt
 

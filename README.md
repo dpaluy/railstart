@@ -16,9 +16,13 @@ gem install railstart
 
 ## Usage
 
-### Generate a new Rails app
+### Quick Start
 
 ```bash
+# Generate config files (optional, for customization)
+railstart init
+
+# Generate a new Rails app
 railstart new my_app
 
 # Or run without arguments for help
@@ -79,17 +83,80 @@ Creating Rails app...
 ✨ Rails app created successfully at ./my_app
 ```
 
-### Skip interactive mode (use defaults)
+### Use Presets
 
-Use the `--default` flag to skip all questions and apply built-in defaults:
+Presets are configuration overlays that let you define different defaults and even different questions/post-actions for specific use cases.
+
+**Important:** When you use `--default` without `--preset`, Railstart automatically applies the `default` preset (from `~/.config/railstart/presets/default.yaml` or the gem's built-in version). This means defaults may differ from the base `rails8_defaults.yaml` config.
+
+**Modes:**
+- **Interactive** (default): prompts for each question from the config schema
+- **With --default**: skips questions, loads "default" preset, shows summary and confirms
+- **With --preset**: loads specified preset as config overlay (can be interactive or with --default)
 
 ```bash
+# Interactive mode (builtin defaults)
+railstart new my_app
+
+# Non-interactive with "default" preset (asks no questions, shows summary + confirms)
+# Note: --default automatically loads the "default" preset (user or gem)
 railstart new my_app --default
+
+# Interactive with custom preset
+railstart new my_app --preset api-only
+
+# Non-interactive with custom preset
+railstart new my_app --preset api-only --default
 ```
 
-This creates a PostgreSQL + Tailwind + Importmap Rails app instantly.
+**Create custom presets** at `~/.config/railstart/presets/my-preset.yaml`:
+
+Presets use the same YAML schema as config files - they can override question defaults, change choices, add new questions, or modify post-actions:
+
+```yaml
+# ~/.config/railstart/presets/api-only.yaml
+# Presets merge on top of user config (and built-in config)
+questions:
+  - id: database
+    choices:
+      - name: PostgreSQL
+        value: postgresql
+        default: true  # Different default for this preset
+
+  - id: api_only
+    default: true  # Override default to true for API preset
+
+post_actions:
+  - id: init_git
+    enabled: false  # Disable git init for this preset
+```
+
+Then use it:
+
+```bash
+# Interactive with api-only config
+railstart new my_app --preset api-only
+
+# Non-interactive with api-only config
+railstart new my_app --preset api-only --default
+```
 
 ## Configuration
+
+### Initialize Configuration Files
+
+The easiest way to get started with custom configuration is to generate example files:
+
+```bash
+railstart init
+```
+
+This creates:
+- `~/.config/railstart/config.yaml` - Example user config with common customizations
+- `~/.config/railstart/presets/` - Directory for your presets
+- `~/.config/railstart/presets/example.yaml` - Example preset to get started
+
+You can then edit these files to match your preferences.
 
 ### Built-in Defaults
 
@@ -97,7 +164,7 @@ Railstart ships with sensible Rails 8 defaults defined in `config/rails8_default
 
 ### Customize for Your Team
 
-Create a `~/.config/railstart/config.yaml` file to override defaults:
+You can create `~/.config/railstart/config.yaml` manually or use `railstart init` to generate an example file:
 
 ```yaml
 questions:
@@ -204,7 +271,7 @@ bin/console
 
 # Install locally to test as a real gem
 gem build railstart.gemspec
-gem install railstart-0.1.0.gem
+gem install railstart-[version].gem
 railstart new my_app
 ```
 
@@ -226,10 +293,28 @@ bundle exec rake test && bundle exec rubocop
 
 ## Architecture
 
-- **Config System** (`lib/railstart/config.rb`) - Loads and merges YAML configurations
+### Three-Layer Configuration System
+
+Railstart merges configuration from three sources (in order):
+
+1. **Built-in config**: `config/rails8_defaults.yaml` (shipped with gem)
+2. **User config**: `~/.config/railstart/config.yaml` (optional global overrides)
+3. **Preset** (optional): `~/.config/railstart/presets/NAME.yaml` (per-run overlay)
+
+Each layer can:
+- Override question defaults
+- Replace choice lists entirely (by question ID)
+- Add new questions
+- Add/modify post-actions
+- Enable/disable post-actions
+
+Merging is by `id` for both `questions` and `post_actions`, allowing surgical overrides without duplicating entire configs.
+
+### Core Components
+
 - **Generator** (`lib/railstart/generator.rb`) - Orchestrates interactive flow
 - **Command Builder** (`lib/railstart/command_builder.rb`) - Translates answers to `rails new` flags
-- **CLI** (`lib/railstart/cli.rb`) - Thor command interface
+- **CLI** (`lib/railstart/cli.rb`) - Thor command interface with `--preset` option
 
 ## Contributing
 

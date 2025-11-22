@@ -17,19 +17,25 @@ module Railstart
 
     class << self
       #
-      # Load, merge, and validate configuration from built-in and user sources.
+      # Load, merge, and validate configuration from built-in, user, and preset sources.
       #
       # @param builtin_path [String] path to default config YAML shipped with the gem
       # @param user_path [String] optional user override YAML path
+      # @param preset_path [String] optional preset YAML path (third overlay)
       # @return [Hash] deep-copied, merged, validated configuration hash
       # @raise [Railstart::ConfigLoadError] when YAML files are missing or unreadable
       # @raise [Railstart::ConfigValidationError] when validation fails
       # @example
       #   config = Railstart::Config.load
-      def load(builtin_path: BUILTIN_CONFIG_PATH, user_path: USER_CONFIG_PATH)
+      # @example With preset
+      #   config = Railstart::Config.load(preset_path: "~/.config/railstart/presets/api-only.yaml")
+      def load(builtin_path: BUILTIN_CONFIG_PATH, user_path: USER_CONFIG_PATH, preset_path: nil)
         builtin = read_yaml(builtin_path, required: true)
         user = read_yaml(user_path, required: false)
+        preset = preset_path ? read_yaml(preset_path, required: false) : {}
+
         merged = merge_config(builtin, user)
+        merged = merge_config(merged, preset) unless preset.empty?
         validate!(merged)
         merged
       end

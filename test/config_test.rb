@@ -250,6 +250,116 @@ module Railstart
       end
     end
 
+    def test_preset_overlay_merges_on_top_of_user_config
+      Dir.mktmpdir do |dir|
+        builtin = {
+          "questions" => [
+            {
+              "id" => "database",
+              "type" => "select",
+              "prompt" => "Which database?",
+              "choices" => [{ "name" => "SQLite", "value" => "sqlite", "default" => true }],
+              "rails_flag" => "--database=%<value>s"
+            }
+          ]
+        }
+        user = {
+          "questions" => [
+            {
+              "id" => "database",
+              "choices" => [{ "name" => "PostgreSQL", "value" => "postgresql", "default" => true }]
+            }
+          ]
+        }
+        preset = {
+          "questions" => [
+            {
+              "id" => "database",
+              "choices" => [{ "name" => "MySQL", "value" => "mysql", "default" => true }]
+            }
+          ]
+        }
+
+        builtin_path = write_yaml(dir, "builtin.yaml", builtin)
+        user_path = write_yaml(dir, "user.yaml", user)
+        preset_path = write_yaml(dir, "preset.yaml", preset)
+
+        config = Config.load(builtin_path: builtin_path, user_path: user_path, preset_path: preset_path)
+
+        database_question = config["questions"].find { |q| q["id"] == "database" }
+        # Preset should override user config
+        assert_equal(["MySQL"], database_question["choices"].map { |c| c["name"] })
+      end
+    end
+
+    def test_preset_changes_generator_default_behavior
+      Dir.mktmpdir do |dir|
+        # Builtin config defines database with SQLite default
+        builtin = {
+          "questions" => [
+            {
+              "id" => "database",
+              "type" => "select",
+              "prompt" => "Which database?",
+              "choices" => [
+                { "name" => "SQLite", "value" => "sqlite3", "default" => true },
+                { "name" => "PostgreSQL", "value" => "postgresql" }
+              ],
+              "rails_flag" => "--database=%<value>s"
+            },
+            {
+              "id" => "api_only",
+              "type" => "yes_no",
+              "prompt" => "API only?",
+              "default" => false,
+              "rails_flag" => "--api"
+            }
+          ],
+          "post_actions" => []
+        }
+
+        # Preset overrides database to PostgreSQL and api_only to true
+        preset = {
+          "questions" => [
+            {
+              "id" => "database",
+              "choices" => [
+                { "name" => "PostgreSQL", "value" => "postgresql", "default" => true }
+              ]
+            },
+            {
+              "id" => "api_only",
+              "default" => true
+            }
+          ]
+        }
+
+        builtin_path = write_yaml(dir, "builtin.yaml", builtin)
+        preset_path = write_yaml(dir, "preset.yaml", preset)
+
+        # Load config with preset overlay
+        config = Config.load(builtin_path: builtin_path, user_path: nil, preset_path: preset_path)
+
+        # Create generator in default mode (use_defaults: true)
+        fake_prompt = Object.new
+        fake_prompt.define_singleton_method(:yes?) { |_question, **_kwargs| true } # Confirm generation
+
+        generator = Generator.new("testapp", config: config, use_defaults: true, prompt: fake_prompt)
+
+        # Stub system calls
+        generator.stub :system, true do
+          Dir.stub :chdir, nil do
+            generator.run
+          end
+        end
+
+        # Verify preset changed the collected defaults
+        answers = generator.instance_variable_get(:@answers)
+        assert_equal "postgresql", answers["database"], "Preset should override database default to PostgreSQL"
+        assert_equal true, answers["api_only"], "Preset should override api_only default to true"
+      end
+    end
+
     private
 
     def merged_config(dir, builtin:, user: nil)

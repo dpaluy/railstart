@@ -31,9 +31,8 @@ module Railstart
 
     def test_default_mode_uses_defaults_without_prompting
       prompt = Minitest::Mock.new
-
-      # In default mode, NO interactive methods should be called
-      # (no select, multi_select, yes?, or ask)
+      # Mock only the final confirmation
+      prompt.expect :yes?, true, ["Proceed with app generation?"]
 
       generator = Generator.new(
         "testapp",
@@ -42,23 +41,20 @@ module Railstart
         prompt: prompt
       )
 
-      # Stub system call to avoid actually running rails new
       generator.stub :system, true do
-        # Stub Dir.chdir to avoid directory changes
         Dir.stub :chdir, nil do
-          # Capture output to verify summary is shown
           output = capture_io do
             generator.run
           end
 
-          # Verify summary was shown (transparency)
+          # Verify summary was shown
           assert_match(/Summary/, output[0])
           assert_match(/testapp/, output[0])
           assert_match(/sqlite3/, output[0]) # Default value shown
         end
       end
 
-      # Verify no interactive prompts were called
+      # Verify only confirmation was called (no question prompts)
       prompt.verify
     end
 
@@ -81,7 +77,6 @@ module Railstart
       generator = Generator.new(
         "testapp",
         config: @config,
-        use_defaults: false,
         prompt: fake_prompt
       )
 
@@ -145,7 +140,7 @@ module Railstart
       refute_includes command, "--skip-bundle"
 
       # Post-action should NOT run (condition fails: skip_bundle != true)
-      generator = Generator.new("testapp", config: config, use_defaults: true)
+      generator = Generator.new("testapp", config: config)
       generator.instance_variable_set(:@answers, answers)
 
       actions_run = []
@@ -202,7 +197,7 @@ module Railstart
       fake_prompt = Object.new
       fake_prompt.define_singleton_method(:yes?) { |_prompt, **_kwargs| true }
 
-      generator = Generator.new("testapp", config: config, use_defaults: false, prompt: fake_prompt)
+      generator = Generator.new("testapp", config: config, prompt: fake_prompt)
       generator.instance_variable_set(:@answers, answers)
 
       actions_run = []
