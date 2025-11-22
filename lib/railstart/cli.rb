@@ -71,7 +71,7 @@ module Railstart
           self.class.subcommand_classes[command].help(shell, subcommand)
         else
           cmd = self.class.all_commands[command]
-          raise Thor::UndefinedCommandError, "Could not find command '#{command}'." unless cmd
+          raise Thor::UndefinedCommandError.new(command, nil, self.class.all_commands.keys) unless cmd
 
           shell.say "Usage:"
           shell.say "  #{self.class.banner(cmd)}"
