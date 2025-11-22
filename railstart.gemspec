@@ -31,6 +31,7 @@ Gem::Specification.new do |spec|
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.add_dependency "thor"
+  spec.add_dependency "tty-box"
   spec.add_dependency "tty-prompt"
   spec.require_paths = ["lib"]
 

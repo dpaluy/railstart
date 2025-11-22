@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "tty-prompt"
+require_relative "ui"
 
 module Railstart
   # Orchestrates the interactive Rails app generation flow.
@@ -41,6 +42,8 @@ module Railstart
     # @example Run with defaults (noninteractive questions)
     #   Railstart::Generator.new("blog", use_defaults: true).run
     def run
+      show_welcome_screen unless @use_defaults
+
       ask_app_name unless @app_name
 
       if @use_defaults
@@ -57,6 +60,11 @@ module Railstart
     end
 
     private
+
+    def show_welcome_screen
+      UI.show_logo
+      UI.show_welcome
+    end
 
     def ask_app_name
       @app_name = @prompt.ask("App name?", default: "my_app") do |q|
@@ -111,19 +119,23 @@ module Railstart
     end
 
     def ask_select(question)
-      choices = question["choices"].map { |c| [c["name"], c["value"]] }
+      # Convert to hash format: { 'Display Name' => 'value' }
+      choices = question["choices"].each_with_object({}) do |choice, hash|
+        hash[choice["name"]] = choice["value"]
+      end
       default_val = find_default(question)
 
-      # TTY::Prompt expects 1-based index for default, not the value
-      default_index = if default_val
-                        question["choices"].index { |c| c["value"] == default_val }&.+(1)
-                      end
+      # TTY::Prompt expects 1-based index for default
+      default_index = (question["choices"].index { |c| c["value"] == default_val }&.+(1) if default_val)
 
       @prompt.select(question["prompt"], choices, default: default_index)
     end
 
     def ask_multi_select(question)
-      choices = question["choices"].map { |c| [c["name"], c["value"]] }
+      # Convert to hash format: { 'Display Name' => 'value' }
+      choices = question["choices"].each_with_object({}) do |choice, hash|
+        hash[choice["name"]] = choice["value"]
+      end
       defaults = question["default"] || []
 
       @prompt.multi_select(question["prompt"], choices, default: defaults)
@@ -145,10 +157,11 @@ module Railstart
     end
 
     def show_summary
-      puts "\n════════════════════════════════════════"
-      puts "Summary"
-      puts "════════════════════════════════════════"
-      puts "App name: #{@app_name}"
+      puts
+      UI.section("Configuration Summary")
+      puts
+
+      summary_lines = ["App name: #{UI.pastel.bright_cyan(@app_name)}"]
 
       Array(@config["questions"]).each do |question|
         question_id = question["id"]
@@ -168,9 +181,20 @@ module Railstart
                       answer.to_s
                     end
 
-        puts "#{label}: #{value_str}"
+        summary_lines << "#{label}: #{UI.pastel.bright_white(value_str)}"
       end
-      puts "════════════════════════════════════════\n"
+
+      box = TTY::Box.frame(
+        width: 60,
+        padding: [0, 2],
+        border: :light,
+        style: {
+          border: { fg: :bright_black }
+        }
+      ) { summary_lines.join("\n") }
+
+      puts box
+      puts
     end
 
     def confirm_proceed?
@@ -180,11 +204,19 @@ module Railstart
     def generate_app
       command = CommandBuilder.build(@app_name, @config, @answers)
 
-      puts "Running: #{command}\n\n"
-      success = system(command)
+      UI.info("Running: #{command}")
+      puts
+
+      # Run rails command outside of bundler context to use system Rails
+      success = if defined?(Bundler)
+                  Bundler.with_unbundled_env { system(command) }
+                else
+                  system(command)
+                end
 
       return if success
 
+      UI.error("Failed to generate Rails app. Check the output above for details.")
       raise Error, "Failed to generate Rails app. Check the output above for details."
     end
 
@@ -192,9 +224,10 @@ module Railstart
       Dir.chdir(@app_name)
 
       Array(@config["post_actions"]).each { |action| process_post_action(action) }
-      puts "\n✨ Rails app created successfully at ./#{@app_name}"
+      puts
+      UI.success("Rails app created successfully at ./#{@app_name}")
     rescue Errno::ENOENT
-      warn "Could not change to app directory. Post-actions skipped."
+      UI.warning("Could not change to app directory. Post-actions skipped.")
     end
 
     def process_post_action(action)
@@ -211,9 +244,9 @@ module Railstart
     end
 
     def execute_action(action)
-      puts "→ #{action["name"]}"
+      UI.info(action["name"].to_s)
       success = system(action["command"])
-      warn "Warning: Post-action '#{action["name"]}' failed. Continuing anyway." unless success
+      UI.warning("Post-action '#{action["name"]}' failed. Continuing anyway.") unless success
     end
 
     def should_run_action?(action)
