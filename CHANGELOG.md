@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-11-22
+
+### Added
+- CLI `--preset` flag now accepts explicit `.yaml`/`.yml` file paths in addition to preset names.
+- **Template post-actions**: New `type: template` post-action type for executing full Rails application templates
+- **TemplateRunner**: New `Railstart::TemplateRunner` class wraps Rails' AppGenerator to run templates with proper context
+- **Template variables**: Template actions support `variables` hash for injecting custom instance variables into templates
+- **Built-in variables**: Templates automatically receive `@app_name` and `@answers` instance variables
+- **Template DSL support**: Full access to Rails template DSL (`gem`, `route`, `initializer`, `after_bundle`, etc.)
+- **Error handling**: New `Railstart::TemplateError` for template execution failures with proper error wrapping
+- **Config validation**: Validation for template post-actions (requires `source`, validates `variables` as Hash)
+- **Documentation**: README section explaining template post-actions vs command actions with security guidance
+
+### Changed
+- **Post-action processing**: Refactored to support both command and template execution types
+- **Directory context**: `run_post_actions` now uses block form of `Dir.chdir` for proper scoping
+- **Config validation**: Enhanced `validate_post_action_entry` to handle multiple action types
+
+### Technical
+- New file: `lib/railstart/template_runner.rb` (77 lines, full YARD docs)
+- New test file: `test/template_runner_test.rb` (comprehensive coverage with mocks)
+- Enhanced `lib/railstart/generator.rb` with template execution flow
+- Enhanced `lib/railstart/config.rb` with template action validation
+- Version bump: 0.3.0 → 0.4.0
+- All tests pass (39 runs, 111 assertions, 0 failures)
+- RuboCop clean (20 files inspected, no offenses)
 
 ## [0.3.0] - 2025-11-22
 

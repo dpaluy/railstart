@@ -197,12 +197,7 @@ module Railstart
 
             issues.concat(validate_question_choices(entry, id || index)) if CHOICE_REQUIRED_TYPES.include?(type)
           elsif name == "post_actions"
-            if entry.fetch("enabled", true)
-              command = entry["command"] || entry[:command]
-              if command.nil? || command.to_s.strip.empty?
-                issues << "Post-action #{id || index} is enabled but missing a command"
-              end
-            end
+            issues.concat(validate_post_action_entry(entry, id || index)) if entry.fetch("enabled", true)
 
             if_condition = entry["if"] || entry[:if]
             if if_condition.is_a?(Hash)
@@ -244,6 +239,32 @@ module Railstart
         end
 
         issues
+      end
+
+      def validate_post_action_entry(entry, identifier)
+        action_type = (entry["type"] || entry[:type] || "command").to_s
+
+        case action_type
+        when "command"
+          command = entry["command"] || entry[:command]
+          if command.nil? || command.to_s.strip.empty?
+            ["Post-action #{identifier} is enabled but missing a command"]
+          else
+            []
+          end
+        when "template"
+          issues = []
+          source = entry["source"] || entry[:source]
+          if source.nil? || source.to_s.strip.empty?
+            issues << "Post-action #{identifier} is a template but missing a source"
+          end
+
+          variables = entry["variables"] || entry[:variables]
+          issues << "Post-action #{identifier} template variables must be a Hash" if variables && !variables.is_a?(Hash)
+          issues
+        else
+          ["Post-action #{identifier} has unsupported type '#{action_type}'"]
+        end
       end
 
       def deep_dup(value)

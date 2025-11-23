@@ -2,6 +2,7 @@
 
 require "tty-prompt"
 require_relative "ui"
+require_relative "template_runner"
 
 module Railstart
   # Orchestrates the interactive Rails app generation flow.
@@ -221,20 +222,30 @@ module Railstart
     end
 
     def run_post_actions
-      Dir.chdir(@app_name)
+      Dir.chdir(@app_name) do
+        template_runner = nil
 
-      Array(@config["post_actions"]).each { |action| process_post_action(action) }
-      puts
-      UI.success("Rails app created successfully at ./#{@app_name}")
+        Array(@config["post_actions"]).each do |action|
+          template_runner ||= TemplateRunner.new(app_path: Dir.pwd) if template_action?(action)
+          process_post_action(action, template_runner)
+        end
+
+        puts
+        UI.success("Rails app created successfully at ./#{@app_name}")
+      end
     rescue Errno::ENOENT
       UI.warning("Could not change to app directory. Post-actions skipped.")
     end
 
-    def process_post_action(action)
+    def process_post_action(action, template_runner)
       return unless should_run_action?(action)
       return unless confirm_action?(action)
 
-      execute_action(action)
+      if template_action?(action)
+        run_template_action(action, template_runner)
+      else
+        run_command_action(action)
+      end
     end
 
     def confirm_action?(action)
@@ -243,10 +254,31 @@ module Railstart
       @prompt.yes?(action["prompt"], default: action.fetch("default", true))
     end
 
-    def execute_action(action)
+    def run_command_action(action)
       UI.info(action["name"].to_s)
       success = system(action["command"])
       UI.warning("Post-action '#{action["name"]}' failed. Continuing anyway.") unless success
+    end
+
+    def run_template_action(action, template_runner)
+      return unless template_runner
+
+      UI.info(action["name"].to_s)
+      source = action["source"]
+      variables = template_variables(action)
+      template_runner.apply(source, variables: variables)
+    rescue TemplateError => e
+      UI.warning("Post-action '#{action["name"]}' failed. #{e.message}")
+    end
+
+    def template_variables(action)
+      base = { app_name: @app_name, answers: @answers }
+      extras = action["variables"].is_a?(Hash) ? action["variables"].transform_keys(&:to_sym) : {}
+      base.merge(extras)
+    end
+
+    def template_action?(action)
+      action["type"].to_s == "template"
     end
 
     def should_run_action?(action)

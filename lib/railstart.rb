@@ -5,6 +5,7 @@ require_relative "railstart/errors"
 require_relative "railstart/config"
 require_relative "railstart/command_builder"
 require_relative "railstart/generator"
+require_relative "railstart/template_runner"
 require_relative "railstart/cli"
 
 # Main namespace for the Railstart gem.

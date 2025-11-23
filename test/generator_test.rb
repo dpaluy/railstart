@@ -42,7 +42,7 @@ module Railstart
       )
 
       generator.stub :system, true do
-        Dir.stub :chdir, nil do
+        Dir.stub :chdir, ->(_path, &block) { block&.call } do
           output = capture_io do
             generator.run
           end
@@ -82,7 +82,7 @@ module Railstart
 
       # Stub system call and Dir.chdir
       generator.stub :system, true do
-        Dir.stub :chdir, nil do
+        Dir.stub :chdir, ->(_path, &block) { block&.call } do
           generator.run
         end
       end
@@ -148,7 +148,7 @@ module Railstart
         actions_run << cmd
         true
       } do
-        Dir.stub :chdir, nil do
+        Dir.stub :chdir, ->(_path, &block) { block&.call } do
           generator.send(:run_post_actions)
         end
       end
@@ -205,13 +205,52 @@ module Railstart
         actions_run << cmd
         true
       } do
-        Dir.stub :chdir, nil do
+        Dir.stub :chdir, ->(_path, &block) { block&.call } do
           generator.send(:run_post_actions)
         end
       end
 
       # bundle install SHOULD have run (Rails skipped it, we run it)
       assert_includes actions_run.join(" "), "bundle install"
+    end
+
+    def test_template_post_action_invokes_template_runner
+      config = {
+        "questions" => [],
+        "post_actions" => [
+          {
+            "id" => "apply_template",
+            "name" => "Apply template",
+            "type" => "template",
+            "source" => "template.rb",
+            "variables" => { "greeting" => "hello" }
+          }
+        ]
+      }
+
+      generator = Generator.new("testapp", config: config, use_defaults: true, prompt: Minitest::Mock.new)
+      generator.instance_variable_set(:@answers, {})
+
+      expected_variables = { app_name: "testapp", answers: {}, greeting: "hello" }
+      template_runner = Class.new do
+        attr_reader :calls
+
+        def initialize
+          @calls = []
+        end
+
+        def apply(source, variables: {})
+          @calls << { source: source, variables: variables }
+        end
+      end.new
+
+      Dir.stub :chdir, ->(_path, &block) { block&.call } do
+        TemplateRunner.stub :new, ->(**_kwargs) { template_runner } do
+          generator.send(:run_post_actions)
+        end
+      end
+
+      assert_equal [{ source: "template.rb", variables: expected_variables }], template_runner.calls
     end
   end
 end

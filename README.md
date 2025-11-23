@@ -309,6 +309,28 @@ post_actions:
       equals: value                 # or includes: [array, values]
 ```
 
+#### Template Post-Actions
+
+Post-actions can now execute full Rails application templates (including [RailsBytes scripts](https://railsbytes.com)) instead of plain shell commands.
+
+```yaml
+post_actions:
+  - id: apply_tailwind_dash
+    name: "Apply Tailwind dashboard template"
+    type: template
+    enabled: false             # keep disabled unless you trust the source
+    prompt: "Run the sample template?"
+    source: "https://railsbytes.com/script/zAasQK"
+    variables:
+      app_label: "internal-tools"  # optional instance variables available inside template
+```
+
+Key differences from `command` actions:
+
+- Set `type: template` and provide a `source` (local path or URL). Railstart streams that template into Rails' own `apply` helper, so all standard DSL commands (`gem`, `route`, `after_bundle`, etc.) are available.
+- `variables` is optional; when present, its keys become instance variables accessible from the template (e.g., `@app_label`). Railstart always exposes `@app_name` and `@answers` for convenience.
+- Template actions still honor `prompt`, `default`, and `if` just like command actions. Keep remote templates disabled by default unless you explicitly trust them.
+
 ## Development
 
 ### Setup
