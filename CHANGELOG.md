@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2025-11-23
+
+### Changed
+- **Init command**: `railstart init` now copies the complete `config/rails8_defaults.yaml` as `~/.config/railstart/config.yaml` instead of generating a minimal example with only 2 questions. Users now see all available configuration options immediately.
+
+### Fixed
+- Improved discoverability of configuration options - users no longer need to guess what can be configured
+
 ## [0.4.0] - 2025-11-22
 
 ### Added

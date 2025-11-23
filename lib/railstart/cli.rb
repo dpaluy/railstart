@@ -257,40 +257,9 @@ module Railstart
     end
 
     def example_user_config
-      <<~YAML
-        ---
-        # Railstart User Configuration
-        # This file overrides built-in defaults for all your Rails projects.
-        #
-        # Merge behavior: questions and post_actions are merged by 'id'.
-        # Override individual fields or add new entries.
-
-        questions:
-          # Example: Change database default to PostgreSQL
-          - id: database
-            choices:
-              - name: PostgreSQL
-                value: postgresql
-                default: true
-
-          # Example: Change CSS default to Tailwind
-          - id: css
-            choices:
-              - name: Tailwind
-                value: tailwind
-                default: true
-
-        post_actions:
-          # Example: Disable bundle install (manage gems manually)
-          # - id: bundle_install
-          #   enabled: false
-
-          # Example: Add custom post-action
-          # - id: setup_linting
-          #   name: "Setup RuboCop and StandardRB"
-          #   enabled: true
-          #   command: "bundle add rubocop rubocop-rails standard --group development"
-      YAML
+      # Copy the full rails8_defaults.yaml as the user config template
+      defaults_path = File.expand_path("../../config/rails8_defaults.yaml", __dir__)
+      File.read(defaults_path)
     end
 
     def example_preset_config
