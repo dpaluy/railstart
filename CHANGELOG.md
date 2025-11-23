@@ -9,8 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Init command**: `railstart init` now copies the complete `config/rails8_defaults.yaml` as `~/.config/railstart/config.yaml` instead of generating a minimal example with only 2 questions. Users now see all available configuration options immediately.
+- **README**: Updated preset usage documentation to show both interactive and non-interactive modes immediately after custom preset creation example
+- **multi_select architecture**: `ask_multi_select` now transforms value-based defaults (e.g., "action_mailer") to name-based defaults (e.g., "Action Mailer") when calling TTY::Prompt, allowing configs to use stable IDs while maintaining correct UI display
 
 ### Fixed
+- **CRITICAL ARCHITECTURE FIX**: Fixed `multi_select` question defaults to use stable choice **values** (internal IDs like "action_mailer") instead of fragile display **names** (like "Action Mailer"). This prevents preset breakage when display text changes.
+  - Updated `lib/railstart/generator.rb` `ask_multi_select` method to transform values → names at the TTY::Prompt boundary
+  - Updated `config/presets/api-only.yaml` to use values in defaults
+  - Updated all examples in `docs/railstart-preset-builder/SKILL.md` to use values
+  - Added comprehensive test coverage (3 new tests) validating transformation and storage behavior
+- **Documentation**: Corrected SKILL.md to explain values-based approach with stability rationale
 - Improved discoverability of configuration options - users no longer need to guess what can be configured
 
 ## [0.4.0] - 2025-11-22
