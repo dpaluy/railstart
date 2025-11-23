@@ -25,4 +25,7 @@ module Railstart
       super(detail)
     end
   end
+
+  # Raised when applying Rails templates fails.
+  class TemplateError < Error; end
 end

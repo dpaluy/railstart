@@ -166,6 +166,40 @@ module Railstart
       end
     end
 
+    def test_template_post_action_validation_passes
+      Dir.mktmpdir do |dir|
+        builtin = {
+          "post_actions" => [
+            {
+              "id" => "apply_template",
+              "type" => "template",
+              "source" => "https://example.com/template.rb",
+              "enabled" => true
+            }
+          ]
+        }
+
+        assert merged_config(dir, builtin: builtin)
+      end
+    end
+
+    def test_template_post_action_missing_source_raises
+      Dir.mktmpdir do |dir|
+        builtin = {
+          "post_actions" => [
+            {
+              "id" => "apply_template",
+              "type" => "template",
+              "enabled" => true
+            }
+          ]
+        }
+
+        error = assert_raises(ConfigValidationError) { merged_config(dir, builtin: builtin) }
+        assert_includes error.message, "missing a source"
+      end
+    end
+
     def test_flag_interpolation_and_error_handling
       flag = "--db=%<value>s"
       assert_equal "--db=postgres", Config.interpolate_flag(flag, "postgres")

@@ -237,6 +237,10 @@ module Railstart
     end
 
     def preset_file_for(name)
+      if (direct_path = explicit_preset_path(name))
+        return direct_path
+      end
+
       # Check user presets first
       user_path = File.join(PRESET_DIR, "#{name}.yaml")
       return user_path if File.exist?(user_path)
@@ -318,6 +322,15 @@ module Railstart
           - id: bundle_install
             enabled: true
       YAML
+    end
+
+    def explicit_preset_path(name)
+      return unless name&.match?(/\.ya?ml\z/)
+
+      expanded = File.expand_path(name)
+      return expanded if File.exist?(expanded)
+
+      raise Railstart::ConfigLoadError, "Preset file '#{name}' not found"
     end
   end
 end
