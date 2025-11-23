@@ -30,24 +30,35 @@ questions:
         value: bulma
       - name: PostCSS (no framework)
         value: postcss
-      - name: None
+      - name: Sass
+        value: sass
+      - name: None (skip CSS setup)
         value: none
     rails_flag: "--css=%{value}"
 
   - id: javascript
     type: select
-    prompt: "Which JavaScript bundler?"
+    prompt: "Which JavaScript approach?"
     choices:
       - name: Importmap (default)
         value: importmap
         default: true
+        rails_flag: "--javascript=importmap"
+      - name: Bun
+        value: bun
+        rails_flag: "--javascript=bun"
       - name: esbuild
         value: esbuild
-      - name: Webpack
-        value: webpack
+        rails_flag: "--javascript=esbuild"
       - name: Rollup
         value: rollup
-    rails_flag: "--javascript=%{value}"
+        rails_flag: "--javascript=rollup"
+      - name: Webpack
+        value: webpack
+        rails_flag: "--javascript=webpack"
+      - name: None (skip JavaScript)
+        value: none
+        rails_flag: "--skip-javascript"
 
   - id: skip_features
     type: multi_select
@@ -102,6 +113,17 @@ questions:
     default: false
     rails_flag: "--skip-bundle"
 
+  - id: test_framework
+    type: select
+    prompt: "Which test framework?"
+    choices:
+      - name: Minitest (default)
+        value: minitest
+        default: true
+      - name: RSpec
+        value: rspec
+        rails_flag: "--skip-test"
+
 post_actions:
   - id: init_git
     name: "Initialize git repository"
@@ -122,3 +144,11 @@ post_actions:
       question: skip_bundle
       equals: true
     command: "bundle install"
+
+  - id: setup_rspec
+    name: "Setup RSpec"
+    enabled: true
+    if:
+      question: test_framework
+      equals: rspec
+    command: "bundle add rspec-rails --group development,test && bundle exec rails generate rspec:install"

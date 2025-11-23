@@ -141,6 +141,70 @@ railstart new my_app --preset api-only
 railstart new my_app --preset api-only --default
 ```
 
+## Creating Custom Presets
+
+Presets are powerful tools for defining opinionated Rails configurations for specific stacks or team standards. For comprehensive guidance on creating presets, see **[Creating Presets Guide](docs/railstart-preset-builder/SKILL.md)**.
+
+### Quick Preset Creation
+
+Create a new preset file in `config/presets/{name}.yaml`:
+
+```yaml
+---
+# My Team Preset - PostgreSQL + RSpec + Vite
+
+questions:
+  - id: database
+    choices:
+      - name: PostgreSQL
+        value: postgresql
+        default: true
+
+  - id: javascript
+    choices:
+      - name: Vite (via vite_rails gem)
+        value: vite
+        default: true
+
+  - id: test_framework
+    choices:
+      - name: RSpec
+        value: rspec
+        default: true
+
+post_actions:
+  - id: setup_vite
+    enabled: true
+
+  - id: setup_rspec
+    enabled: true
+```
+
+Then use it:
+
+```bash
+railstart new myapp --preset my-team
+```
+
+### Built-in Presets
+
+Railstart includes several ready-to-use presets:
+
+- **`default`** - PostgreSQL + Tailwind + Importmap (sensible defaults)
+- **`api-only`** - Minimal Rails for JSON APIs (no views, no frontend)
+- **`vite-bun`** - Modern SPA with Vite + Bundlebun
+
+### Learn More
+
+For detailed documentation including:
+- Available questions and post-actions
+- ID-based merging system
+- Step-by-step workflow
+- Real-world examples
+- Best practices and troubleshooting
+
+See the comprehensive **[Creating Presets Guide](docs/railstart-preset-builder/SKILL.md)**.
+
 ## Configuration
 
 ### Initialize Configuration Files

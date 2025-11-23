@@ -105,6 +105,67 @@ module Railstart
       assert_includes command, "--database=mysql"
     end
 
+    def test_select_with_choice_level_rails_flag
+      add_question(
+        "javascript",
+        "select",
+        "choices" => [
+          { "name" => "Importmap", "value" => "importmap", "rails_flag" => "--javascript=importmap" },
+          { "name" => "Vite", "value" => "vite" },
+          { "name" => "None", "value" => "none", "rails_flag" => "--skip-javascript" }
+        ]
+      )
+
+      # Test importmap choice with its own flag
+      command = CommandBuilder.build("app", @config, "javascript" => "importmap")
+      assert_includes command, "--javascript=importmap"
+
+      # Test vite choice with no flag
+      command = CommandBuilder.build("app", @config, "javascript" => "vite")
+      refute_includes command, "--javascript"
+      refute_includes command, "--skip-javascript"
+
+      # Test none choice with different flag
+      command = CommandBuilder.build("app", @config, "javascript" => "none")
+      assert_includes command, "--skip-javascript"
+      refute_includes command, "--javascript="
+    end
+
+    def test_select_choice_level_flag_takes_precedence_over_question_level
+      add_question(
+        "css",
+        "select",
+        "rails_flag" => "--css=%<value>s",
+        "choices" => [
+          { "name" => "Tailwind", "value" => "tailwind" },
+          { "name" => "None", "value" => "none", "rails_flag" => "--skip-css" }
+        ]
+      )
+
+      # Tailwind uses question-level flag
+      command = CommandBuilder.build("app", @config, "css" => "tailwind")
+      assert_includes command, "--css=tailwind"
+
+      # None uses choice-level flag which overrides question-level
+      command = CommandBuilder.build("app", @config, "css" => "none")
+      assert_includes command, "--skip-css"
+      refute_includes command, "--css=none"
+    end
+
+    def test_select_with_no_flags_adds_nothing
+      add_question(
+        "custom",
+        "select",
+        "choices" => [
+          { "name" => "Option A", "value" => "a" },
+          { "name" => "Option B", "value" => "b" }
+        ]
+      )
+
+      command = CommandBuilder.build("app", @config, "custom" => "a")
+      assert_equal "rails new app", command
+    end
+
     private
 
     def add_question(id, type, extra = {})

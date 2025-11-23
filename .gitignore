@@ -3,7 +3,6 @@
 /_yardoc/
 /coverage/
 /doc/
-/docs/
 /pkg/
 /tmp/
 
@@ -17,4 +16,5 @@ CLAUDE.md
 .repoprompt/
 .factory/
 .claude/
+.codex/
 *.gem
