@@ -252,5 +252,119 @@ module Railstart
 
       assert_equal [{ source: "template.rb", variables: expected_variables }], template_runner.calls
     end
+
+    def test_multi_select_defaults_transform_values_to_names
+      config = {
+        "questions" => [
+          {
+            "id" => "skip_features",
+            "type" => "multi_select",
+            "prompt" => "Skip any features?",
+            "choices" => [
+              { "name" => "Action Mailer", "value" => "action_mailer", "rails_flag" => "--skip-action-mailer" },
+              { "name" => "Action Text", "value" => "action_text", "rails_flag" => "--skip-action-text" },
+              { "name" => "Hotwire (Turbo + Stimulus)", "value" => "hotwire", "rails_flag" => "--skip-hotwire" }
+            ],
+            "default" => %w[action_mailer hotwire] # Uses values in config
+          }
+        ],
+        "post_actions" => []
+      }
+
+      prompt = Minitest::Mock.new
+      # Verify that TTY::Prompt receives transformed names, not values
+      expected_choices = {
+        "Action Mailer" => "action_mailer",
+        "Action Text" => "action_text",
+        "Hotwire (Turbo + Stimulus)" => "hotwire"
+      }
+      expected_defaults = ["Action Mailer", "Hotwire (Turbo + Stimulus)"] # Names, not values
+
+      prompt.expect :multi_select, ["action_mailer", "hotwire"] do |question_text, choices, **options|
+        question_text == "Skip any features?" &&
+          choices == expected_choices &&
+          options[:default] == expected_defaults
+      end
+      prompt.expect :yes?, true, ["Proceed with app generation?"]
+
+      generator = Generator.new("testapp", config: config, use_defaults: false, prompt: prompt)
+
+      generator.stub :system, true do
+        Dir.stub :chdir, ->(_path, &block) { block&.call } do
+          capture_io { generator.run }
+        end
+      end
+
+      prompt.verify
+    end
+
+    def test_multi_select_defaults_stored_as_values_for_command_builder
+      config = {
+        "questions" => [
+          {
+            "id" => "skip_features",
+            "type" => "multi_select",
+            "prompt" => "Skip any features?",
+            "choices" => [
+              { "name" => "Action Mailer", "value" => "action_mailer", "rails_flag" => "--skip-action-mailer" },
+              { "name" => "Action Text", "value" => "action_text", "rails_flag" => "--skip-action-text" }
+            ],
+            "default" => %w[action_mailer action_text]
+          }
+        ],
+        "post_actions" => []
+      }
+
+      prompt = Minitest::Mock.new
+      prompt.expect :yes?, true, ["Proceed with app generation?"]
+
+      generator = Generator.new("testapp", config: config, use_defaults: true, prompt: prompt)
+
+      generator.stub :system, true do
+        Dir.stub :chdir, ->(_path, &block) { block&.call } do
+          capture_io { generator.run }
+        end
+      end
+
+      # Verify answers contain values (what CommandBuilder expects)
+      answers = generator.instance_variable_get(:@answers)
+      assert_equal %w[action_mailer action_text], answers["skip_features"]
+    end
+
+    def test_multi_select_handles_missing_defaults_gracefully
+      config = {
+        "questions" => [
+          {
+            "id" => "skip_features",
+            "type" => "multi_select",
+            "prompt" => "Skip any features?",
+            "choices" => [
+              { "name" => "Action Mailer", "value" => "action_mailer", "rails_flag" => "--skip-action-mailer" }
+            ]
+            # No default specified
+          }
+        ],
+        "post_actions" => []
+      }
+
+      prompt = Minitest::Mock.new
+      # Should pass empty array as default
+      prompt.expect :multi_select, [] do |question_text, choices, **options|
+        question_text == "Skip any features?" &&
+          choices == { "Action Mailer" => "action_mailer" } &&
+          options[:default] == []
+      end
+      prompt.expect :yes?, true, ["Proceed with app generation?"]
+
+      generator = Generator.new("testapp", config: config, use_defaults: false, prompt: prompt)
+
+      generator.stub :system, true do
+        Dir.stub :chdir, ->(_path, &block) { block&.call } do
+          capture_io { generator.run }
+        end
+      end
+
+      prompt.verify
+    end
   end
 end

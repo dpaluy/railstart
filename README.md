@@ -183,7 +183,11 @@ post_actions:
 Then use it:
 
 ```bash
+# Interactive mode - prompts for each question
 railstart new myapp --preset my-team
+
+# Non-interactive mode - uses all preset defaults
+railstart new myapp --preset my-team --default
 ```
 
 ### Built-in Presets
@@ -209,18 +213,18 @@ See the comprehensive **[Creating Presets Guide](docs/railstart-preset-builder/S
 
 ### Initialize Configuration Files
 
-The easiest way to get started with custom configuration is to generate example files:
+The easiest way to get started with custom configuration is to generate template files:
 
 ```bash
 railstart init
 ```
 
 This creates:
-- `~/.config/railstart/config.yaml` - Example user config with common customizations
+- `~/.config/railstart/config.yaml` - Complete configuration template (copy of rails8_defaults.yaml with all available options)
 - `~/.config/railstart/presets/` - Directory for your presets
 - `~/.config/railstart/presets/example.yaml` - Example preset to get started
 
-You can then edit these files to match your preferences.
+The generated `config.yaml` shows all available questions, choices, flags, and post-actions. You can delete or comment out sections you don't want to customize, and modify the defaults for sections you do want to change.
 
 ### Built-in Defaults
 
@@ -228,24 +232,29 @@ Railstart ships with sensible Rails 8 defaults defined in `config/rails8_default
 
 ### Customize for Your Team
 
-You can create `~/.config/railstart/config.yaml` manually or use `railstart init` to generate an example file:
+You can create `~/.config/railstart/config.yaml` manually or use `railstart init` to generate a complete template file. The template includes all available options, so you can simply modify the defaults you want to change:
 
 ```yaml
+# After running `railstart init`, your config.yaml will contain all options.
+# Simply modify the defaults you want to change:
+
 questions:
   - id: database
     choices:
       - name: PostgreSQL (recommended)
         value: postgresql
-        default: true  # Your team's preference
+        default: true  # Changed from SQLite to PostgreSQL
+
+  # ... other questions with their full configuration ...
 
 post_actions:
   - id: bundle_install
-    enabled: false  # Your team manages gems differently
-  
+    enabled: false  # Disabled - your team manages gems differently
+
   - id: setup_auth
     name: "Setup authentication"
     enabled: true
-    command: "bundle exec rails generate devise:install"
+    command: "bundle exec rails generate devise:install"  # New custom action
 ```
 
 **Merge behavior:**

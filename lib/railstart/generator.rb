@@ -137,9 +137,16 @@ module Railstart
       choices = question["choices"].each_with_object({}) do |choice, hash|
         hash[choice["name"]] = choice["value"]
       end
-      defaults = question["default"] || []
 
-      @prompt.multi_select(question["prompt"], choices, default: defaults)
+      # Transform value-based defaults to name-based defaults for TTY::Prompt
+      # Config uses stable values (e.g., "action_mailer"), TTY::Prompt needs display names
+      value_defaults = question["default"] || []
+      name_defaults = value_defaults.map do |value|
+        choice = question["choices"].find { |c| c["value"] == value }
+        choice ? choice["name"] : nil
+      end.compact
+
+      @prompt.multi_select(question["prompt"], choices, default: name_defaults)
     end
 
     def ask_yes_no?(question)

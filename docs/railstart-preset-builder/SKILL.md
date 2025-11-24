@@ -37,6 +37,30 @@ Questions and post-actions merge by unique `id` field:
 - Individual choice `default` flags override base configuration
 - Post-actions with matching IDs have their `enabled` state overridden
 
+### multi_select Defaults
+
+For `multi_select` questions (like `skip_features`), always use choice **values** (stable IDs), not display names:
+
+```yaml
+# ✅ CORRECT - Uses stable value identifiers
+- id: skip_features
+  default:
+    - action_mailer      # Stable internal ID
+    - action_text        # Won't break if display text changes
+    - hotwire
+
+# ❌ WRONG - Uses display names (fragile)
+- id: skip_features
+  default:
+    - Action Mailer                # Breaks if wording changes
+    - Hotwire (Turbo + Stimulus)   # Fragile, avoid
+```
+
+**Why values are better:**
+- **Stability**: Display text can change for UX improvements without breaking presets
+- **Consistency**: Values are used throughout the system (CommandBuilder, answers storage)
+- **Correctness**: Generator automatically transforms values → names for TTY::Prompt display
+
 ## Available Questions
 
 From `config/rails8_defaults.yaml`:
@@ -67,9 +91,10 @@ From `config/rails8_defaults.yaml`:
 
 ### Skip Features (multi_select)
 - **ID:** `skip_features`
-- **Choices:** `action_mailer`, `action_mailbox`, `action_text`, `active_record`, `active_job`, `active_storage`, `action_cable`, `hotwire`
+- **Values:** `action_mailer`, `action_mailbox`, `action_text`, `active_record`, `active_job`, `active_storage`, `action_cable`, `hotwire`
 - **Default:** `[]` (none skipped)
 - **Flags:** Individual choice flags (e.g., `--skip-action-mailer`)
+- **Note:** Use values in `default` array, not display names (see multi_select Defaults section above)
 
 ### Boolean Options (yes_no)
 - **IDs:** `api_only`, `skip_git`, `skip_docker`, `skip_bundle`

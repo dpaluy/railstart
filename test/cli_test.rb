@@ -29,5 +29,25 @@ module Railstart
         assert_includes error.message, "Preset file"
       end
     end
+
+    def test_init_copies_rails8_defaults_yaml_content
+      cli = Railstart::CLI.new
+      user_config = cli.send(:example_user_config)
+
+      # Verify it contains the full rails8_defaults.yaml structure
+      assert_includes user_config, "questions:"
+      assert_includes user_config, "post_actions:"
+      assert_includes user_config, "id: database"
+      assert_includes user_config, "id: css"
+      assert_includes user_config, "id: javascript"
+      assert_includes user_config, "id: test_framework"
+      assert_includes user_config, "id: init_git"
+      assert_includes user_config, "id: setup_rspec"
+
+      # Verify it's valid YAML
+      parsed = YAML.safe_load(user_config, permitted_classes: [Symbol])
+      assert parsed["questions"].is_a?(Array)
+      assert parsed["post_actions"].is_a?(Array)
+    end
   end
 end
