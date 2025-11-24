@@ -1,6 +1,6 @@
 # Railstart
 
-[![Gem Version](https://badge.fury.io/rb/railstart.svg)](https://badge.fury.io/rb/railstart)
+[![Gem Version](https://img.shields.io/gem/v/railstart)](https://rubygems.org/gems/railstart)
 [![Documentation](https://img.shields.io/badge/docs-rubydoc.info-blue.svg)](https://rubydoc.info/gems/railstart)
 [![CI](https://github.com/dpaluy/railstart/actions/workflows/ci.yml/badge.svg)](https://github.com/dpaluy/railstart/actions/workflows/ci.yml)
 
