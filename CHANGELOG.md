@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2025-11-25
+
+### Fixed
+- **Light theme support**: Configuration Summary values now visible on light terminal backgrounds. Replaced `bright_white` and `bright_cyan` with universal ANSI colors (`green`, `cyan`) that work on both light and dark themes.
+
 ## [0.4.1] - 2025-11-23
 
 ### Changed

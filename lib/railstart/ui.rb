@@ -44,7 +44,7 @@ module Railstart
         padding: [0, 1],
         border: :thick,
         style: {
-          fg: :bright_white,
+          fg: :cyan,
           border: { fg: :cyan }
         }
       ) { message }
