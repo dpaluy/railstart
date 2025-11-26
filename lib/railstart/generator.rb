@@ -169,7 +169,7 @@ module Railstart
       UI.section("Configuration Summary")
       puts
 
-      summary_lines = ["App name: #{UI.pastel.bright_cyan(@app_name)}"]
+      summary_lines = ["App name: #{UI.pastel.cyan(@app_name)}"]
 
       Array(@config["questions"]).each do |question|
         question_id = question["id"]
@@ -189,7 +189,7 @@ module Railstart
                       answer.to_s
                     end
 
-        summary_lines << "#{label}: #{UI.pastel.bright_white(value_str)}"
+        summary_lines << "#{label}: #{UI.pastel.green(value_str)}"
       end
 
       box = TTY::Box.frame(
