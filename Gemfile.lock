@@ -63,7 +63,7 @@ GEM
     unicode-display_width (2.6.0)
     unicode_utils (1.4.0)
     wisper (2.0.1)
-    yard (0.9.37)
+    yard (0.9.38)
 
 PLATFORMS
   arm64-darwin-24
