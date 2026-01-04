@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["documentation_uri"] = "https://rubydoc.info/gems/railstart"
   spec.metadata["source_code_uri"] = "https://github.com/dpaluy/railstart"
-  spec.metadata["changelog_uri"] = "https://github.com/dpaluy/railstart/blob/main/CHANGELOG.md"
+  spec.metadata["changelog_uri"] = "https://github.com/dpaluy/railstart/blob/master/CHANGELOG.md"
   spec.metadata["bug_tracker_uri"] = "https://github.com/dpaluy/railstart/issues"
 
   gemspec = File.basename(__FILE__)
