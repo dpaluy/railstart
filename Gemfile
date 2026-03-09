@@ -7,5 +7,5 @@ gemspec
 gem "minitest", "~> 6.0"
 gem "minitest-mock"
 gem "rake", "~> 13.0"
-gem "rubocop", "~> 1.82"
+gem "rubocop", "~> 1.85"
 gem "yard", "~> 0.9"
