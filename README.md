@@ -411,9 +411,9 @@ Merging is by `id` for both `questions` and `post_actions`, allowing surgical ov
 - **Command Builder** (`lib/railstart/command_builder.rb`) - Translates answers to `rails new` flags
 - **CLI** (`lib/railstart/cli.rb`) - Thor command interface with `--preset` option
 
-## Claude Code Integration
+## AI Agent Skill
 
-Railstart ships with a [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill at `.agents/skills/railstart-coder/` that provides AI-assisted Rails app generation, preset creation, and gem development. The skill covers CLI usage, configuration, preset authoring, and the gem's internal architecture.
+Railstart ships with an agent skill at `.agents/skills/railstart-coder/` for Codex- and Claude-style coding agents. The skill is structured as a lean `SKILL.md` plus focused reference files covering CLI usage, config layering, preset authoring, template post-actions, and gem development.
 
 ## Contributing
 

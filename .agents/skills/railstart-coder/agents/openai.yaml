@@ -1,0 +1,4 @@
+interface:
+  display_name: "Railstart"
+  short_description: "Generate Rails apps with railstart"
+  default_prompt: "Use $railstart-coder to generate a Rails app, preset, or gem change with railstart."

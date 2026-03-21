@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **Agent skill**: Refactored `.agents/skills/railstart-coder/` into a lean skill with focused reference files for CLI usage, presets, post-actions, and gem development
+- **Agent metadata**: Added `agents/openai.yaml` metadata for the railstart skill
+- **README**: Updated the skill section to describe the agent-oriented skill layout
+
 ## [0.4.3] - 2026-01-04
 
 ### Added
