@@ -1,0 +1,56 @@
+---
+# Lightweight local prototype preset using SQLite and no frontend setup.
+#
+# Use directly:
+#   railstart new scratch_app --preset ./examples/presets/minimal-sqlite.yml --default
+#
+# Or copy to:
+#   ~/.config/railstart/presets/minimal-sqlite.yml
+
+questions:
+  - id: database
+    choices:
+      - name: SQLite
+        value: sqlite3
+        default: true
+
+  - id: css
+    choices:
+      - name: None
+        value: none
+        default: true
+
+  - id: javascript
+    choices:
+      - name: None
+        value: none
+        default: true
+        rails_flag: "--skip-javascript"
+
+  - id: skip_features
+    default:
+      - action_mailer
+      - action_mailbox
+      - action_text
+      - active_storage
+      - action_cable
+      - hotwire
+
+  - id: api_only
+    default: false
+
+  - id: skip_git
+    default: false
+
+  - id: skip_docker
+    default: true
+
+  - id: skip_bundle
+    default: false
+
+post_actions:
+  - id: init_git
+    enabled: true
+
+  - id: bundle_install
+    enabled: false

@@ -1,12 +1,12 @@
 ---
-# Rails preset for a Vite frontend, Tailwind, PostgreSQL, Bun packaged through
-# Bundlebun, and RSpec.
+# Rails preset for a Vite frontend, Tailwind, PostgreSQL, and Bun packaged
+# through Bundlebun.
 #
 # Use directly:
-#   railstart new my_app --preset ./examples/presets/vite-bun-rspec.yml --default
+#   railstart new my_app --preset ./examples/presets/vite-bun.yml --default
 #
 # Or copy to:
-#   ~/.config/railstart/presets/vite-bun-rspec.yml
+#   ~/.config/railstart/presets/vite-bun.yml
 
 questions:
   - id: database
@@ -30,12 +30,8 @@ questions:
   - id: skip_features
     default: []
 
-  - id: test_framework
-    choices:
-      - name: RSpec
-        value: rspec
-        default: true
-        rails_flag: "--skip-test"
+  - id: api_only
+    default: false
 
   - id: skip_docker
     default: false
@@ -53,9 +49,6 @@ post_actions:
     name: "Setup Bundlebun"
     enabled: true
     command: "bundle add bundlebun && bundle install && bundle exec rake bun:install"
-
-  - id: setup_rspec
-    enabled: true
 
   - id: bundle_install
     enabled: false

@@ -1,0 +1,37 @@
+---
+# Template post-action example.
+#
+# Use this as a reference when adding Rails templates or RailsBytes scripts to
+# your own preset. The action is disabled by default so copying this file will
+# not run a remote template unless you opt in.
+
+questions:
+  - id: database
+    choices:
+      - name: PostgreSQL
+        value: postgresql
+        default: true
+
+  - id: css
+    choices:
+      - name: Tailwind
+        value: tailwind
+        default: true
+
+  - id: javascript
+    choices:
+      - name: Importmap
+        value: importmap
+        default: true
+        rails_flag: "--javascript=importmap"
+
+post_actions:
+  - id: apply_example_template
+    name: "Apply example Rails template"
+    type: template
+    enabled: false
+    prompt: "Apply the example template?"
+    default: false
+    source: "https://railsbytes.com/script/zAasQK"
+    variables:
+      app_label: "example-app"

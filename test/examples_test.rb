@@ -6,6 +6,7 @@ module Railstart
   class ExamplesTest < Minitest::Test
     ROOT = File.expand_path("..", __dir__)
     USER_CONFIG_EXAMPLE = File.join(ROOT, "examples/config.yml")
+    EXAMPLE_YAML_FILES = Dir[File.join(ROOT, "examples/**/*.yml")].freeze
     PRESET_EXAMPLES = Dir[File.join(ROOT, "examples/presets/*.yml")].freeze
 
     def test_user_config_example_loads_as_user_config
@@ -25,6 +26,17 @@ module Railstart
 
         assert_match(/\Arails new example_app/, command, "Expected #{path} to build a rails command")
         refute_match(/%\{value\}|%<value>/, command, "Expected #{path} to interpolate all flags")
+      end
+    end
+
+    def test_examples_do_not_select_a_test_framework
+      refute_empty EXAMPLE_YAML_FILES
+
+      EXAMPLE_YAML_FILES.each do |path|
+        text = File.read(path)
+
+        refute_match(/\brspec\b/i, text, "Expected #{path} to avoid RSpec-specific examples")
+        refute_match(/\btest_framework\b/, text, "Expected #{path} to leave the test framework default alone")
       end
     end
 

@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Example configs**: Added copyable `examples/` YAML files for global defaults, API apps, PostgreSQL/RSpec apps, and Vite/Bun/RSpec apps
+- **Example configs**: Added copyable `examples/` YAML files for global defaults, API apps, standard PostgreSQL apps, minimal SQLite apps, Vite/Bun apps, and template post-actions
 
 ### Changed
 - **Agent guidance**: Tracked `AGENTS.md` in git while excluding it from gem builds
