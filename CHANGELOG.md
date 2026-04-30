@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Agent guidance**: Tracked `AGENTS.md` in git while excluding it from gem builds
+
 ## [0.4.4] - 2026-04-30
 
 ### Changed
