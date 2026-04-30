@@ -36,6 +36,12 @@ post_actions:
 
 Use presets for reusable named stacks. Use `~/.config/railstart/config.yaml` for personal defaults that should apply to every run.
 
+Preset locations:
+
+- User presets: `~/.config/railstart/presets/NAME.yaml`
+- Built-in gem presets in this repo: `config/presets/NAME.yaml`
+- Explicit paths: `railstart new app --preset ./path/to/preset.yaml`
+
 ## Merge Rules
 
 - Match `questions` by `id`.
@@ -130,3 +136,5 @@ Behavior:
 - Prefer question-level flags for broad cases and choice-level flags only when a specific choice needs special behavior or no flag.
 - Test non-interactive presets with `railstart new APP_NAME --preset NAME --default`.
 - When a preset adds a brand-new choice value, verify `CommandBuilder` behavior still makes sense for that value.
+- Disable inherited post-actions explicitly with `enabled: false` when a preset should suppress them.
+- Do not rely on display names in conditions or defaults; conditions compare against stored answer values.

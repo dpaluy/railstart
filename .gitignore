@@ -15,6 +15,7 @@ CLAUDE.md
 .worktrees/
 .repoprompt/
 .factory/
+.omx/
 .claude/
 .codex/
 *.gem

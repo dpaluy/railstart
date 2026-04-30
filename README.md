@@ -143,7 +143,7 @@ railstart new my_app --preset api-only --default
 
 ## Creating Custom Presets
 
-Presets are powerful tools for defining opinionated Rails configurations for specific stacks or team standards. For comprehensive guidance on creating presets, see **[Creating Presets Guide](docs/railstart-preset-builder/SKILL.md)**.
+Presets are powerful tools for defining opinionated Rails configurations for specific stacks or team standards.
 
 ### Quick Preset Creation
 
@@ -197,17 +197,6 @@ Railstart includes several ready-to-use presets:
 - **`default`** - PostgreSQL + Tailwind + Importmap (sensible defaults)
 - **`api-only`** - Minimal Rails for JSON APIs (no views, no frontend)
 - **`vite-bun`** - Modern SPA with Vite + Bundlebun
-
-### Learn More
-
-For detailed documentation including:
-- Available questions and post-actions
-- ID-based merging system
-- Step-by-step workflow
-- Real-world examples
-- Best practices and troubleshooting
-
-See the comprehensive **[Creating Presets Guide](docs/railstart-preset-builder/SKILL.md)**.
 
 ## Configuration
 
@@ -422,3 +411,5 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/dpaluy
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+
+Supported by [Majestic Labs](https://majesticlabs.dev/).

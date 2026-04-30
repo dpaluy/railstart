@@ -65,8 +65,11 @@ bundle exec rake test
 bundle exec rubocop
 bundle exec rubocop -a
 gem build railstart.gemspec
+bundle exec exe/railstart version
 bundle exec exe/railstart new my_app --default
 ```
+
+Run `bundle exec exe/railstart new ...` only when app generation is part of the requested verification. For config and flag behavior, prefer focused Minitest coverage around `Config`, `CommandBuilder`, and `Generator`.
 
 Testing conventions in this repo:
 

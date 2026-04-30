@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-04-30
+
 ### Changed
 - **Agent skill**: Refactored `.agents/skills/railstart-coder/` into a lean skill with focused reference files for CLI usage, presets, post-actions, and gem development
 - **Agent metadata**: Added `agents/openai.yaml` metadata for the railstart skill
+- **Gem packaging**: Excluded local `.omx/` orchestration state from gem builds
 - **README**: Updated the skill section to describe the agent-oriented skill layout
+
+### Removed
+- **Redundant preset skill doc**: Removed `docs/railstart-preset-builder/SKILL.md`; preset authoring guidance now lives in `.agents/skills/railstart-coder/references/`
 
 ## [0.4.3] - 2026-01-04
 
@@ -33,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CRITICAL ARCHITECTURE FIX**: Fixed `multi_select` question defaults to use stable choice **values** (internal IDs like "action_mailer") instead of fragile display **names** (like "Action Mailer"). This prevents preset breakage when display text changes.
   - Updated `lib/railstart/generator.rb` `ask_multi_select` method to transform values → names at the TTY::Prompt boundary
   - Updated `config/presets/api-only.yaml` to use values in defaults
-  - Updated all examples in `docs/railstart-preset-builder/SKILL.md` to use values
+  - Updated preset documentation examples to use values
   - Added comprehensive test coverage (3 new tests) validating transformation and storage behavior
 - **Documentation**: Corrected SKILL.md to explain values-based approach with stability rationale
 - Improved discoverability of configuration options - users no longer need to guess what can be configured

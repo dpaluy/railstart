@@ -10,7 +10,9 @@
 
 ## CLI Commands
 
-Use these commands when operating the gem:
+Use `railstart ...` when operating an installed gem. From this repository checkout, prefer `bundle exec exe/railstart ...` so verification exercises the local source.
+
+Common installed commands:
 
 ```bash
 railstart init
@@ -31,6 +33,7 @@ Important CLI behavior:
 - `--preset` also accepts an explicit `.yaml` or `.yml` path.
 - `--default` maps to the `default` preset name. If no `default` preset exists, Railstart falls back to the built-in config.
 - `railstart init` copies the full `config/rails8_defaults.yaml` into `~/.config/railstart/config.yaml` and creates `~/.config/railstart/presets/example.yaml`.
+- There is no dry-run mode. Use `CommandBuilder` tests or injected generator tests when you need to verify flags without creating a Rails app.
 
 Current built-in preset files:
 
@@ -53,6 +56,7 @@ Merge rules:
 - Scalars overwrite earlier values.
 - Arrays other than `questions` and `post_actions` replace the earlier value.
 - Validation runs after merge.
+- For matched question entries, `choices` is a normal nested array and is replaced when the overlay supplies it.
 
 ## Built-in Questions
 
@@ -83,6 +87,8 @@ Built-in `skip_features` values:
 
 Do not assume the built-in list is the full universe of valid values. A preset can replace `choices` for a question and introduce values such as `vite`.
 
+Flag interpolation supports Ruby `format` placeholders such as `%{value}` and `%<value>s`. Prefer `%{value}` in new config unless a string formatting width/type is needed.
+
 ## Built-in Post-Actions
 
 These are the current post-actions defined in `config/rails8_defaults.yaml`.
@@ -101,3 +107,4 @@ These are the current post-actions defined in `config/rails8_defaults.yaml`.
 - A `select` choice can define its own `rails_flag` or `rails_flags`; if it does, that takes precedence over a question-level flag.
 - A `select` choice can also intentionally emit no flag at all.
 - App generation failure aborts the run. Post-action failures only warn and continue.
+- `--default` skips interactive questions, but Railstart still shows the summary and asks for final confirmation before running `rails new`.
