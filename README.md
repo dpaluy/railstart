@@ -147,11 +147,11 @@ Presets are powerful tools for defining opinionated Rails configurations for spe
 
 ### Quick Preset Creation
 
-Create a new preset file in `config/presets/{name}.yaml`:
+Create a new preset file in `~/.config/railstart/presets/{name}.yaml`:
 
 ```yaml
 ---
-# My Team Preset - PostgreSQL + RSpec + Vite
+# My Team Preset - PostgreSQL + Tailwind + Importmap
 
 questions:
   - id: database
@@ -160,23 +160,21 @@ questions:
         value: postgresql
         default: true
 
+  - id: css
+    choices:
+      - name: Tailwind
+        value: tailwind
+        default: true
+
   - id: javascript
     choices:
-      - name: Vite (via vite_rails gem)
-        value: vite
+      - name: Importmap
+        value: importmap
         default: true
-
-  - id: test_framework
-    choices:
-      - name: RSpec
-        value: rspec
-        default: true
+        rails_flag: "--javascript=importmap"
 
 post_actions:
-  - id: setup_vite
-    enabled: true
-
-  - id: setup_rspec
+  - id: init_git
     enabled: true
 ```
 
@@ -197,6 +195,30 @@ Railstart includes several ready-to-use presets:
 - **`default`** - PostgreSQL + Tailwind + Importmap (sensible defaults)
 - **`api-only`** - Minimal Rails for JSON APIs (no views, no frontend)
 - **`vite-bun`** - Modern SPA with Vite + Bundlebun
+
+### Example YAML Files
+
+This repository also includes copyable YAML examples in `examples/`:
+
+- `examples/config.yml` - global defaults for `~/.config/railstart/config.yaml`
+- `examples/presets/api-postgresql.yml` - JSON API service with PostgreSQL
+- `examples/presets/standard-postgresql.yml` - full-stack PostgreSQL app
+- `examples/presets/minimal-sqlite.yml` - lightweight local prototype app
+- `examples/presets/vite-bun.yml` - Vite, Bun, Tailwind, and PostgreSQL
+- `examples/presets/template-action.yml` - template post-action reference
+
+Use a preset example directly by passing its path:
+
+```bash
+railstart new my_app --preset ./examples/presets/standard-postgresql.yml --default
+```
+
+Or copy one into your user presets directory:
+
+```bash
+cp examples/presets/standard-postgresql.yml ~/.config/railstart/presets/standard-postgresql.yml
+railstart new my_app --preset standard-postgresql --default
+```
 
 ## Configuration
 

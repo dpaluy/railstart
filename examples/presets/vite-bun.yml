@@ -1,0 +1,54 @@
+---
+# Rails preset for a Vite frontend, Tailwind, PostgreSQL, and Bun packaged
+# through Bundlebun.
+#
+# Use directly:
+#   railstart new my_app --preset ./examples/presets/vite-bun.yml --default
+#
+# Or copy to:
+#   ~/.config/railstart/presets/vite-bun.yml
+
+questions:
+  - id: database
+    choices:
+      - name: PostgreSQL
+        value: postgresql
+        default: true
+
+  - id: css
+    choices:
+      - name: Tailwind
+        value: tailwind
+        default: true
+
+  - id: javascript
+    choices:
+      - name: Vite
+        value: vite
+        default: true
+
+  - id: skip_features
+    default: []
+
+  - id: api_only
+    default: false
+
+  - id: skip_docker
+    default: false
+
+  - id: skip_bundle
+    default: false
+
+post_actions:
+  - id: setup_vite
+    name: "Setup Vite Rails"
+    enabled: true
+    command: "bundle add vite_rails && bundle install && bundle exec vite install"
+
+  - id: setup_bundlebun
+    name: "Setup Bundlebun"
+    enabled: true
+    command: "bundle add bundlebun && bundle install && bundle exec rake bun:install"
+
+  - id: bundle_install
+    enabled: false
