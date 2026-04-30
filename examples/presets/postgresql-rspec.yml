@@ -1,0 +1,48 @@
+---
+# Conventional full-stack Rails preset with PostgreSQL, Tailwind, Importmap,
+# and RSpec.
+#
+# Use directly:
+#   railstart new my_app --preset ./examples/presets/postgresql-rspec.yml --default
+#
+# Or copy to:
+#   ~/.config/railstart/presets/postgresql-rspec.yml
+
+questions:
+  - id: database
+    choices:
+      - name: PostgreSQL
+        value: postgresql
+        default: true
+
+  - id: css
+    choices:
+      - name: Tailwind
+        value: tailwind
+        default: true
+
+  - id: javascript
+    choices:
+      - name: Importmap
+        value: importmap
+        default: true
+        rails_flag: "--javascript=importmap"
+
+  - id: skip_features
+    default:
+      - action_mailbox
+      - action_text
+
+  - id: test_framework
+    choices:
+      - name: RSpec
+        value: rspec
+        default: true
+        rails_flag: "--skip-test"
+
+post_actions:
+  - id: setup_rspec
+    enabled: true
+
+  - id: bundle_install
+    enabled: false

@@ -198,6 +198,28 @@ Railstart includes several ready-to-use presets:
 - **`api-only`** - Minimal Rails for JSON APIs (no views, no frontend)
 - **`vite-bun`** - Modern SPA with Vite + Bundlebun
 
+### Example YAML Files
+
+This repository also includes copyable YAML examples in `examples/`:
+
+- `examples/config.yml` - global defaults for `~/.config/railstart/config.yaml`
+- `examples/presets/api-postgresql.yml` - JSON API service with PostgreSQL
+- `examples/presets/postgresql-rspec.yml` - full-stack PostgreSQL app with RSpec
+- `examples/presets/vite-bun-rspec.yml` - Vite, Bun, Tailwind, PostgreSQL, and RSpec
+
+Use a preset example directly by passing its path:
+
+```bash
+railstart new my_app --preset ./examples/presets/postgresql-rspec.yml --default
+```
+
+Or copy one into your user presets directory:
+
+```bash
+cp examples/presets/postgresql-rspec.yml ~/.config/railstart/presets/postgresql-rspec.yml
+railstart new my_app --preset postgresql-rspec --default
+```
+
 ## Configuration
 
 ### Initialize Configuration Files

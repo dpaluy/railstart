@@ -1,0 +1,30 @@
+---
+# Example user config.
+#
+# Copy to ~/.config/railstart/config.yaml when you want these defaults to apply
+# to every Railstart run. Existing questions merge by id. When overriding a
+# select question's choices, include every choice you still want to offer because
+# the choices array is replaced as a unit.
+
+questions:
+  - id: database
+    choices:
+      - name: SQLite
+        value: sqlite3
+      - name: PostgreSQL
+        value: postgresql
+        default: true
+      - name: MySQL
+        value: mysql
+
+  - id: skip_features
+    default:
+      - action_mailbox
+      - action_text
+
+  - id: skip_docker
+    default: true
+
+post_actions:
+  - id: bundle_install
+    enabled: false
