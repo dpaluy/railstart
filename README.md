@@ -8,7 +8,7 @@ Interactive CLI wizard for generating Rails 8 applications with customizable con
 
 Think of it as `rails new` with an opinion and a friendly interactive experience.
 
-Requires Ruby 4.0.5 or newer.
+Requires Ruby 3.2 or newer. Development and release tooling use Ruby 4.0.5.
 
 ## Installation
 

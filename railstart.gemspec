@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = "Interactive CLI wizard for Rails app generation with customizable config"
   spec.homepage = "https://github.com/dpaluy/railstart"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 4.0.5"
+  spec.required_ruby_version = ">= 3.2.0"
 
   spec.metadata["rubygems_mfa_required"] = "true"
   spec.metadata["documentation_uri"] = "https://rubydoc.info/gems/railstart"
