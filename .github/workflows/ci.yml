@@ -19,7 +19,7 @@ jobs:
           - "4.0.5"
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Set up Ruby
