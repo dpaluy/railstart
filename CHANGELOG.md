@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-11
+
 ### Added
 - **Ruby 4.0.5 coverage**: Pinned development and release workflows to Ruby 4.0.5 and added exact Ruby 4.0.5 coverage to the existing CI matrix
 - **Rails contract coverage**: Added opt-in `rails new --pretend` checks for the built-in configuration and every shipped preset
