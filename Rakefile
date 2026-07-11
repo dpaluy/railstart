@@ -13,7 +13,7 @@ begin
   require "yard"
   YARD::Rake::YardocTask.new(:yard) do |t|
     t.files = ["lib/**/*.rb"]
-    t.options = ["--output-dir", "doc", "--markup", "markdown"]
+    t.options = ["--output-dir", "doc", "--markup", "markdown", "--fail-on-warning"]
   end
 rescue LoadError
   # YARD not available

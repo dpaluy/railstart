@@ -16,6 +16,7 @@ jobs:
         ruby:
           - "3.4"
           - "4.0"
+          - "4.0.5"
 
     steps:
       - uses: actions/checkout@v5
@@ -26,5 +27,21 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
-      - name: Run the default task
-        run: bundle exec rake
+      - name: Run tests
+        run: bundle exec rake test
+      - name: Run RuboCop
+        run: bundle exec rubocop
+      - name: Generate documentation
+        run: bundle exec rake yard
+      - name: Build gem
+        run: gem build railstart.gemspec
+      - name: Check executable syntax
+        run: ruby -c exe/railstart
+      - name: Smoke test executable
+        run: bundle exec exe/railstart version
+      - name: Install Rails for shipped-config contract test
+        run: gem install rails --version "~> 8.1" --no-document
+      - name: Validate shipped config against Rails
+        env:
+          RAILS_CONTRACT: "1"
+        run: bundle exec ruby -Itest test/rails_cli_contract_test.rb

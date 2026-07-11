@@ -115,6 +115,42 @@ module Railstart
       end
     end
 
+    def test_validation_error_for_duplicate_question_ids_in_user_overlay
+      Dir.mktmpdir do |dir|
+        builtin = {
+          "questions" => [valid_question("database")]
+        }
+        user = {
+          "questions" => [
+            { "id" => "database", "prompt" => "First override?" },
+            { "id" => "database", "prompt" => "Second override?" }
+          ]
+        }
+
+        error = assert_raises(ConfigValidationError) { merged_config(dir, builtin: builtin, user: user) }
+        assert_includes error.message, "questions entry id database is defined 2 times"
+      end
+    end
+
+    def test_validation_error_for_duplicate_post_action_ids_in_preset
+      Dir.mktmpdir do |dir|
+        builtin = { "questions" => [valid_question("database")] }
+        preset = {
+          "post_actions" => [
+            { "id" => "setup", "enabled" => false },
+            { "id" => "setup", "enabled" => false }
+          ]
+        }
+        builtin_path = write_yaml(dir, "builtin.yaml", builtin)
+        preset_path = write_yaml(dir, "preset.yaml", preset)
+
+        error = assert_raises(ConfigValidationError) do
+          Config.load(builtin_path: builtin_path, user_path: nil, preset_path: preset_path)
+        end
+        assert_includes error.message, "post_actions entry id setup is defined 2 times"
+      end
+    end
+
     def test_validation_error_for_invalid_question_type
       Dir.mktmpdir do |dir|
         builtin = {
@@ -146,6 +182,179 @@ module Railstart
         }
         error = assert_raises(ConfigValidationError) { merged_config(dir, builtin: builtin) }
         assert_includes error.message, "must define at least one choice"
+      end
+    end
+
+    def test_validation_error_for_missing_question_prompt
+      Dir.mktmpdir do |dir|
+        question = valid_question("database").tap { |entry| entry.delete("prompt") }
+
+        error = assert_raises(ConfigValidationError) { merged_config(dir, builtin: { "questions" => [question] }) }
+        assert_includes error.message, "Question database is missing a prompt"
+      end
+    end
+
+    def test_validation_error_for_duplicate_choice_names_and_values
+      Dir.mktmpdir do |dir|
+        question = valid_question("database")
+        question["choices"] << { "name" => "SQLite", "value" => "sqlite3" }
+
+        error = assert_raises(ConfigValidationError) { merged_config(dir, builtin: { "questions" => [question] }) }
+        assert_includes error.message, "duplicate choice name"
+        assert_includes error.message, "duplicate choice value"
+      end
+    end
+
+    def test_validation_error_for_multiple_select_choice_defaults
+      Dir.mktmpdir do |dir|
+        question = valid_question("database")
+        question["choices"] << { "name" => "PostgreSQL", "value" => "postgresql", "default" => true }
+
+        error = assert_raises(ConfigValidationError) { merged_config(dir, builtin: { "questions" => [question] }) }
+        assert_includes error.message, "at most one default choice"
+      end
+    end
+
+    def test_validation_error_when_select_default_is_not_a_choice
+      Dir.mktmpdir do |dir|
+        question = valid_question("database").merge("default" => "postgresql")
+
+        error = assert_raises(ConfigValidationError) { merged_config(dir, builtin: { "questions" => [question] }) }
+        assert_includes error.message, "default \"postgresql\" is not a defined choice"
+      end
+    end
+
+    def test_validation_error_when_multi_select_default_has_wrong_type_or_unknown_values
+      Dir.mktmpdir do |dir|
+        question = valid_multi_select_question.merge("default" => "mailer")
+        wrong_type = assert_raises(ConfigValidationError) do
+          merged_config(dir, builtin: { "questions" => [question] })
+        end
+        assert_includes wrong_type.message, "default must be an Array"
+
+        question["default"] = %w[mailer unknown]
+        unknown = assert_raises(ConfigValidationError) do
+          merged_config(dir, builtin: { "questions" => [question] })
+        end
+        assert_includes unknown.message, "unknown default choice"
+      end
+    end
+
+    def test_validation_error_when_yes_no_default_is_not_boolean
+      Dir.mktmpdir do |dir|
+        question = {
+          "id" => "skip_git", "type" => "yes_no", "prompt" => "Skip Git?", "default" => "false"
+        }
+
+        error = assert_raises(ConfigValidationError) { merged_config(dir, builtin: { "questions" => [question] }) }
+        assert_includes error.message, "default must be true or false"
+      end
+    end
+
+    def test_validation_error_for_invalid_rails_flag_shapes_and_interpolation
+      Dir.mktmpdir do |dir|
+        questions = [
+          valid_question("scalar_flag").merge("rails_flag" => ["--database=sqlite3"]),
+          valid_question("flag_list").merge("rails_flags" => "--database=sqlite3"),
+          valid_question("flag_member").merge("rails_flags" => ["--database=sqlite3", 123]),
+          valid_question("unknown_token").merge("rails_flag" => "--database=%<unknown>s"),
+          valid_question("wrong_format").merge("rails_flag" => "--database=%<value>d")
+        ]
+
+        error = assert_raises(ConfigValidationError) { merged_config(dir, builtin: { "questions" => questions }) }
+        assert_includes error.message, "rails_flag must be a String"
+        assert_includes error.message, "rails_flags must be an Array of Strings"
+        assert_includes error.message, "invalid rails_flag interpolation"
+      end
+    end
+
+    def test_validation_error_for_invalid_choice_level_flag
+      Dir.mktmpdir do |dir|
+        question = valid_question("database")
+        question["choices"][0]["rails_flags"] = [false]
+
+        error = assert_raises(ConfigValidationError) { merged_config(dir, builtin: { "questions" => [question] }) }
+        assert_includes error.message, "choice at index 0 rails_flags must be an Array of Strings"
+      end
+    end
+
+    def test_interpolation_wraps_invalid_format_types
+      error = assert_raises(ConfigError) { Config.interpolate_flag("--db=%<value>d", "postgres") }
+      assert_includes error.message, "Invalid interpolation token"
+    end
+
+    def test_validation_error_for_invalid_depends_on_structure_reference_and_order
+      Dir.mktmpdir do |dir|
+        invalid_structure = valid_question("css").merge("depends_on" => "database")
+        error = assert_raises(ConfigValidationError) do
+          merged_config(dir, builtin: { "questions" => [invalid_structure] })
+        end
+        assert_includes error.message, "depends_on must be a Hash"
+
+        forward_reference = valid_question("css").merge(
+          "depends_on" => { "question" => "database", "value" => "sqlite3" }
+        )
+        error = assert_raises(ConfigValidationError) do
+          merged_config(dir, builtin: { "questions" => [forward_reference, valid_question("database")] })
+        end
+        assert_includes error.message, "must reference an earlier question"
+
+        unknown_reference = valid_question("css").merge(
+          "depends_on" => { "question" => "missing", "value" => "sqlite3" }
+        )
+        error = assert_raises(ConfigValidationError) do
+          merged_config(dir, builtin: { "questions" => [valid_question("database"), unknown_reference] })
+        end
+        assert_includes error.message, "references unknown question 'missing'"
+      end
+    end
+
+    def test_valid_depends_on_reference_passes
+      Dir.mktmpdir do |dir|
+        dependent = valid_question("css").merge(
+          "depends_on" => { "question" => "database", "value" => "sqlite3" }
+        )
+
+        assert merged_config(dir, builtin: { "questions" => [valid_question("database"), dependent] })
+      end
+    end
+
+    def test_validation_error_for_invalid_post_action_condition
+      Dir.mktmpdir do |dir|
+        conditions = [
+          "database",
+          { "question" => "missing", "equals" => "sqlite3" },
+          { "question" => "database" },
+          { "question" => "database", "equals" => "sqlite3", "includes" => ["sqlite3"] },
+          { "question" => "database", "includes" => "sqlite3" }
+        ]
+
+        conditions.each do |condition|
+          action = { "id" => "setup", "enabled" => false, "if" => condition }
+          assert_raises(ConfigValidationError) do
+            merged_config(
+              dir,
+              builtin: { "questions" => [valid_question("database")], "post_actions" => [action] }
+            )
+          end
+        end
+      end
+    end
+
+    def test_validation_error_for_invalid_template_variable_key
+      Dir.mktmpdir do |dir|
+        action = {
+          "id" => "template",
+          "type" => "template",
+          "enabled" => true,
+          "source" => "template.rb",
+          "variables" => { "invalid-name" => "value" }
+        }
+
+        error = assert_raises(ConfigValidationError) do
+          merged_config(dir, builtin: { "post_actions" => [action] })
+        end
+        assert_includes error.message, "invalid template variable name"
       end
     end
 
@@ -406,6 +615,28 @@ module Railstart
       path = File.join(dir, filename)
       File.write(path, YAML.dump(data))
       path
+    end
+
+    def valid_question(id)
+      {
+        "id" => id,
+        "type" => "select",
+        "prompt" => "Choose #{id}",
+        "choices" => [{ "name" => "SQLite", "value" => "sqlite3", "default" => true }],
+        "rails_flag" => "--#{id}=%<value>s"
+      }
+    end
+
+    def valid_multi_select_question
+      {
+        "id" => "features",
+        "type" => "multi_select",
+        "prompt" => "Choose features",
+        "choices" => [
+          { "name" => "Mailer", "value" => "mailer", "rails_flag" => "--mailer" },
+          { "name" => "Storage", "value" => "storage", "rails_flag" => "--storage" }
+        ]
+      }
     end
   end
 end

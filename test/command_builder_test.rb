@@ -99,6 +99,20 @@ module Railstart
       assert_match(/rails new app --database=postgres --api --skip-action-mailer/, command)
     end
 
+    def test_arguments_preserve_user_values_as_single_process_arguments
+      add_question("label", "input", "rails_flag" => "--label=%<value>s")
+
+      arguments = CommandBuilder.arguments("bad; printf injected", @config, "label" => "x; printf injected")
+
+      assert_equal ["rails", "new", "bad; printf injected", "--label=x; printf injected"], arguments
+    end
+
+    def test_build_shell_escapes_the_displayed_command
+      command = CommandBuilder.build("bad; printf injected", @config, {})
+
+      assert_equal "rails new bad\\;\\ printf\\ injected", command
+    end
+
     def test_flag_interpolation_occurs_in_output
       add_question("database", "select", "rails_flag" => "--database=%<value>s")
       command = CommandBuilder.build("app", @config, "database" => "mysql")

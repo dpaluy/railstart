@@ -34,7 +34,7 @@ bundle exec rake test && bundle exec rubocop
 - **Linting:** RuboCop (see `.rubocop.yml`)
 - **Testing Framework:** Minitest (prefer assertions over mocks; integration > unit)
 - **Commits:** Conventional Commits (feat:, fix:, test:, docs:, refactor:)
-- **Ruby Version:** 3.2.0 minimum (see `railstart.gemspec`)
+- **Ruby Version:** 3.2.0 minimum; local and release baseline is 4.0.5 (see `railstart.gemspec` and `.ruby-version`)
 
 ---
 

@@ -34,6 +34,7 @@ questions:
         value: sass
       - name: None (skip CSS setup)
         value: none
+        rails_flag: "--skip-css"
     rails_flag: "--css=%{value}"
 
   - id: javascript

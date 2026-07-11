@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "shellwords"
+
 module Railstart
   # Translates configuration and user answers into a `rails new` command string.
   #
@@ -23,11 +25,27 @@ module Railstart
       # @example
       #   Railstart::CommandBuilder.build("todo", config, answers)
       def build(app_name, config, answers)
-        flags = collect_flags(config["questions"], answers)
-        "rails new #{app_name} #{flags.join(" ")}".strip
+        arguments(app_name, config, answers).map { |argument| display_argument(argument) }.join(" ")
+      end
+
+      # Build process arguments for `rails new` without shell interpretation.
+      #
+      # @param app_name [String] target Rails app name
+      # @param config [Hash] merged configuration from {Railstart::Config.load}
+      # @param answers [Hash] user answers keyed by question id
+      # @return [Array<String>] executable and arguments suitable for `system(*arguments)`
+      def arguments(app_name, config, answers)
+        ["rails", "new", app_name.to_s, *collect_flags(config["questions"], answers)]
       end
 
       private
+
+      def display_argument(argument)
+        value = argument.to_s
+        return value if value.match?(%r{\A[\w@%+=:,./-]+\z})
+
+        Shellwords.escape(value)
+      end
 
       def collect_flags(questions, answers)
         flags = []
