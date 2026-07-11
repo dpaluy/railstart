@@ -4,7 +4,7 @@
 
 **Type:** Single Ruby gem (interactive Rails application starter)
 
-**Tech Stack:** Ruby 3.2+, Rails 8+, Thor (CLI), TTY::Prompt (interactive prompts), Minitest (testing)
+**Tech Stack:** Ruby 4.0.5+, Rails 8+, Thor (CLI), TTY::Prompt (interactive prompts), Minitest (testing)
 
 **Purpose:** Provides an opinionated, interactive CLI wizard (`railstart new`) that guides developers through Rails 8 project setup with customizable defaults and post-generation hooks.
 
@@ -34,7 +34,7 @@ bundle exec rake test && bundle exec rubocop
 - **Linting:** RuboCop (see `.rubocop.yml`)
 - **Testing Framework:** Minitest (prefer assertions over mocks; integration > unit)
 - **Commits:** Conventional Commits (feat:, fix:, test:, docs:, refactor:)
-- **Ruby Version:** 3.2.0 minimum (see `railstart.gemspec`)
+- **Ruby Version:** 4.0.5 minimum (see `railstart.gemspec`)
 
 ---
 

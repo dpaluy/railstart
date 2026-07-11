@@ -8,6 +8,8 @@ Interactive CLI wizard for generating Rails 8 applications with customizable con
 
 Think of it as `rails new` with an opinion and a friendly interactive experience.
 
+Requires Ruby 4.0.5 or newer.
+
 ## Installation
 
 ```bash
@@ -231,11 +233,11 @@ railstart init
 ```
 
 This creates:
-- `~/.config/railstart/config.yaml` - Complete configuration template (copy of rails8_defaults.yaml with all available options)
+- `~/.config/railstart/config.yaml` - Minimal example containing only a few global overrides
 - `~/.config/railstart/presets/` - Directory for your presets
 - `~/.config/railstart/presets/example.yaml` - Example preset to get started
 
-The generated `config.yaml` shows all available questions, choices, flags, and post-actions. You can delete or comment out sections you don't want to customize, and modify the defaults for sections you do want to change.
+Keep `config.yaml` minimal so future built-in choices and flags continue to reach your installation. The full shipped schema remains available in `config/rails8_defaults.yaml`, while `examples/config.yml` provides a larger copyable example.
 
 ### Built-in Defaults
 
@@ -243,20 +245,15 @@ Railstart ships with sensible Rails 8 defaults defined in `config/rails8_default
 
 ### Customize for Your Team
 
-You can create `~/.config/railstart/config.yaml` manually or use `railstart init` to generate a complete template file. The template includes all available options, so you can simply modify the defaults you want to change:
+You can create `~/.config/railstart/config.yaml` manually or use `railstart init` to generate a minimal starting point. Add only the defaults you want to change:
 
 ```yaml
-# After running `railstart init`, your config.yaml will contain all options.
-# Simply modify the defaults you want to change:
+# After running `railstart init`, config.yaml contains a few example overrides.
+# Keep only the overrides you want to apply to every run:
 
 questions:
   - id: database
-    choices:
-      - name: PostgreSQL (recommended)
-        value: postgresql
-        default: true  # Changed from SQLite to PostgreSQL
-
-  # ... other questions with their full configuration ...
+    default: postgresql
 
 post_actions:
   - id: bundle_install
@@ -356,6 +353,9 @@ Key differences from `command` actions:
 ### Setup
 
 ```bash
+# Install the required Ruby version
+mise install ruby@4.0.5
+
 # Install dependencies
 bundle install
 
@@ -394,7 +394,7 @@ bundle exec rubocop
 bundle exec rubocop -a
 
 # Full check
-bundle exec rake test && bundle exec rubocop
+bundle exec rake test && bundle exec rubocop && bundle exec rake yard && gem build railstart.gemspec
 ```
 
 ## Architecture

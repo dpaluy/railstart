@@ -257,9 +257,26 @@ module Railstart
     end
 
     def example_user_config
-      # Copy the full rails8_defaults.yaml as the user config template
-      defaults_path = File.expand_path("../../config/rails8_defaults.yaml", __dir__)
-      File.read(defaults_path)
+      <<~YAML
+        ---
+        # User overrides for every Railstart run.
+        #
+        # Keep this file minimal. Entries merge by id with Railstart's built-in
+        # configuration. Overriding a choices array replaces the entire array.
+        # See config/rails8_defaults.yaml in the Railstart repository for the
+        # full schema and every available question, choice, and post-action.
+
+        questions:
+          - id: database
+            default: postgresql
+
+          - id: skip_docker
+            default: true
+
+        post_actions:
+          - id: bundle_install
+            enabled: false
+      YAML
     end
 
     def example_preset_config

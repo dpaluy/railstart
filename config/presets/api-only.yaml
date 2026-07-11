@@ -13,6 +13,7 @@ questions:
       - name: None
         value: none
         default: true
+        rails_flag: "--skip-css"
 
   - id: javascript
     choices:

@@ -12,21 +12,24 @@ Gem::Specification.new do |spec|
   spec.description = "Interactive CLI wizard for Rails app generation with customizable config"
   spec.homepage = "https://github.com/dpaluy/railstart"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.2.0"
+  spec.required_ruby_version = ">= 4.0.5"
 
   spec.metadata["rubygems_mfa_required"] = "true"
-  spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["documentation_uri"] = "https://rubydoc.info/gems/railstart"
   spec.metadata["source_code_uri"] = "https://github.com/dpaluy/railstart"
   spec.metadata["changelog_uri"] = "https://github.com/dpaluy/railstart/blob/master/CHANGELOG.md"
   spec.metadata["bug_tracker_uri"] = "https://github.com/dpaluy/railstart/issues"
 
   gemspec = File.basename(__FILE__)
+  excluded_prefixes = %w[
+    bin/ Gemfile .gitignore .ruby-version test/ .github/ .rubocop.yml
+    docs/ .agents/ .omx/ examples/
+  ]
   spec.files = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL) do |ls|
     ls.readlines("\x0", chomp: true).reject do |f|
       (f == gemspec) ||
         (f == "AGENTS.md") ||
-        f.start_with?(*%w[bin/ Gemfile .gitignore test/ .github/ .rubocop.yml docs/ .agents/ .omx/ examples/])
+        f.start_with?(*excluded_prefixes)
     end
   end
   spec.bindir = "exe"

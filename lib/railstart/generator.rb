@@ -16,6 +16,9 @@ module Railstart
   # @example Run generator non-interactively
   #   Railstart::Generator.new("blog", use_defaults: true).run
   class Generator
+    APP_NAME_PATTERN = /\A[a-z0-9_-]+\z/
+    APP_NAME_ERROR = "Must be lowercase letters, numbers, underscores, or hyphens"
+
     #
     # @param app_name [String, nil] preset app name, prompted if nil
     # @param config [Hash, nil] injected config for testing, defaults to Config.load
@@ -46,6 +49,7 @@ module Railstart
       show_welcome_screen unless @use_defaults
 
       ask_app_name unless @app_name
+      validate_app_name!
 
       if @use_defaults
         collect_defaults
@@ -69,8 +73,14 @@ module Railstart
 
     def ask_app_name
       @app_name = @prompt.ask("App name?", default: "my_app") do |q|
-        q.validate(/\A[a-z0-9_-]+\z/, "Must be lowercase letters, numbers, underscores, or hyphens")
+        q.validate(APP_NAME_PATTERN, APP_NAME_ERROR)
       end
+    end
+
+    def validate_app_name!
+      return if @app_name.to_s.match?(APP_NAME_PATTERN)
+
+      raise Error, "Invalid app name '#{@app_name}': #{APP_NAME_ERROR}"
     end
 
     def collect_defaults
@@ -121,9 +131,7 @@ module Railstart
 
     def ask_select(question)
       # Convert to hash format: { 'Display Name' => 'value' }
-      choices = question["choices"].each_with_object({}) do |choice, hash|
-        hash[choice["name"]] = choice["value"]
-      end
+      choices = question["choices"].to_h { |choice| [choice["name"], choice["value"]] }
       default_val = find_default(question)
 
       # TTY::Prompt expects 1-based index for default
@@ -134,9 +142,7 @@ module Railstart
 
     def ask_multi_select(question)
       # Convert to hash format: { 'Display Name' => 'value' }
-      choices = question["choices"].each_with_object({}) do |choice, hash|
-        hash[choice["name"]] = choice["value"]
-      end
+      choices = question["choices"].to_h { |choice| [choice["name"], choice["value"]] }
 
       # Transform value-based defaults to name-based defaults for TTY::Prompt
       # Config uses stable values (e.g., "action_mailer"), TTY::Prompt needs display names
@@ -210,6 +216,7 @@ module Railstart
     end
 
     def generate_app
+      arguments = CommandBuilder.arguments(@app_name, @config, @answers)
       command = CommandBuilder.build(@app_name, @config, @answers)
 
       UI.info("Running: #{command}")
@@ -217,9 +224,9 @@ module Railstart
 
       # Run rails command outside of bundler context to use system Rails
       success = if defined?(Bundler)
-                  Bundler.with_unbundled_env { system(command) }
+                  Bundler.with_unbundled_env { system(*arguments) }
                 else
-                  system(command)
+                  system(*arguments)
                 end
 
       return if success

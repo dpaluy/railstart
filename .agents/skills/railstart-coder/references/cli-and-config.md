@@ -32,7 +32,8 @@ Important CLI behavior:
 - `--preset NAME` resolves user presets first from `~/.config/railstart/presets/NAME.yaml`, then gem presets from `config/presets/NAME.yaml`.
 - `--preset` also accepts an explicit `.yaml` or `.yml` path.
 - `--default` maps to the `default` preset name. If no `default` preset exists, Railstart falls back to the built-in config.
-- `railstart init` copies the full `config/rails8_defaults.yaml` into `~/.config/railstart/config.yaml` and creates `~/.config/railstart/presets/example.yaml`.
+- `railstart init` creates a minimal override at `~/.config/railstart/config.yaml` and an example preset at `~/.config/railstart/presets/example.yaml`.
+- Keep user overrides minimal. Overriding a `choices` array replaces the full built-in array, so copied full configs can hide choices added by future Railstart releases.
 - There is no dry-run mode. Use `CommandBuilder` tests or injected generator tests when you need to verify flags without creating a Rails app.
 
 Current built-in preset files:
@@ -65,7 +66,7 @@ These are the current questions defined in `config/rails8_defaults.yaml`.
 | ID | Type | Built-in choices/default | Rails flag behavior |
 | --- | --- | --- | --- |
 | `database` | `select` | `sqlite3` default, `postgresql`, `mysql` | Question-level `--database=%<value>s` |
-| `css` | `select` | `tailwind` default, `bootstrap`, `bulma`, `postcss`, `sass`, `none` | Question-level `--css=%{value}` except custom choice-level overrides you may add in presets |
+| `css` | `select` | `tailwind` default, `bootstrap`, `bulma`, `postcss`, `sass`, `none` | Question-level `--css=%{value}`; built-in `none` overrides it with `--skip-css` |
 | `javascript` | `select` | `importmap` default, `bun`, `esbuild`, `rollup`, `webpack`, `none` | Choice-level flags for built-in choices |
 | `skip_features` | `multi_select` | empty default | Selected choices emit their own skip flags |
 | `api_only` | `yes_no` | `false` | `--api` when true |

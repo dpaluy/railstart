@@ -4,6 +4,42 @@ require "test_helper"
 
 module Railstart
   class GeneratorTest < Minitest::Test
+    def test_rejects_invalid_cli_app_name_before_generation
+      generator = Generator.new("bad; printf injected", config: { "questions" => [], "post_actions" => [] })
+
+      error = assert_raises(Railstart::Error) { generator.run }
+
+      assert_includes error.message, "lowercase letters"
+    end
+
+    def test_generate_app_executes_an_argument_vector
+      config = {
+        "questions" => [
+          {
+            "id" => "database",
+            "type" => "select",
+            "choices" => [{ "name" => "PostgreSQL", "value" => "postgresql" }],
+            "rails_flag" => "--database=%<value>s"
+          }
+        ],
+        "post_actions" => []
+      }
+      generator = Generator.new("testapp", config: config)
+      generator.instance_variable_set(:@answers, "database" => "postgresql")
+      received = nil
+
+      system_call = lambda do |*arguments|
+        received = arguments
+        true
+      end
+
+      generator.stub(:system, system_call) do
+        generator.send(:generate_app)
+      end
+
+      assert_equal ["rails", "new", "testapp", "--database=postgresql"], received
+    end
+
     def setup
       @config = {
         "questions" => [
