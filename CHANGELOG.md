@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Config validation**: Added fail-fast validation for duplicate IDs, invalid defaults, malformed flags, dependency conditions, post-action conditions, and template variable names
 
 ### Changed
+- **Development dependencies**: Updated Minitest to 6.0.6, Rake to 13.4.2, RuboCop to 1.88.2, and YARD to 0.9.44
 - **Safe command execution**: Rails generation now executes an argument vector instead of a shell-interpreted command string
 - **Init command**: `railstart init` now generates minimal user overrides so future built-in choices and flags are not shadowed by a copied full configuration
 - **CI quality gate**: CI now runs tests, RuboCop, YARD, gem packaging, executable smoke checks, and Rails CLI contract checks
