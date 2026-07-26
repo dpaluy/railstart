@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-07-26
+
+### Changed
+- Updated the YARD documentation tool from 0.9.44 to 0.9.45.
+- Updated RDoc from 6.17.0 to 8.0.0 and retained green Ruby 3.4/4.0/4.0.5 CI coverage.
+
 ## [0.5.0] - 2026-07-11
 
 ### Added
