@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-07-26
+
+### Changed
+- Updated GitHub Actions `actions/checkout` from v5 to v7.
+- Updated YARD from 0.9.44 to 0.9.45.
+- Updated RDoc from 6.17.0 to 8.0.0.
+
 ## [0.5.0] - 2026-07-11
 
 ### Added
