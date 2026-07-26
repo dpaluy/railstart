@@ -18,3 +18,4 @@ CLAUDE.md
 .claude/
 .codex/
 *.gem
+/Gemfile.lock
