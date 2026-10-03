@@ -2,6 +2,7 @@
 
 require "tty-prompt"
 require_relative "ui"
+require_relative "file_writer"
 require_relative "template_runner"
 
 module Railstart
@@ -23,11 +24,13 @@ module Railstart
     # @param app_name [String, nil] preset app name, prompted if nil
     # @param config [Hash, nil] injected config for testing, defaults to Config.load
     # @param use_defaults [Boolean] skip interactive questions, use config defaults
+    # @param assume_yes [Boolean] fully headless mode, implies defaults and bypasses confirmations
     # @param prompt [TTY::Prompt] injectable prompt for testing
-    def initialize(app_name = nil, config: nil, use_defaults: false, prompt: nil)
+    def initialize(app_name = nil, config: nil, use_defaults: false, assume_yes: false, prompt: nil)
       @app_name = app_name
       @config = config || Config.load
-      @use_defaults = use_defaults
+      @assume_yes = assume_yes
+      @use_defaults = use_defaults || @assume_yes
       @prompt = prompt || TTY::Prompt.new
       @answers = {}
     end
@@ -48,8 +51,14 @@ module Railstart
     def run
       show_welcome_screen unless @use_defaults
 
-      ask_app_name unless @app_name
-      validate_app_name!
+      if @app_name
+        validate_app_name!
+      elsif @assume_yes
+        raise Error, "APP_NAME is required when running in --yes mode"
+      else
+        ask_app_name
+        validate_app_name!
+      end
 
       if @use_defaults
         collect_defaults
@@ -212,6 +221,8 @@ module Railstart
     end
 
     def confirm_proceed?
+      return true if @assume_yes
+
       @prompt.yes?("Proceed with app generation?")
     end
 
@@ -257,6 +268,8 @@ module Railstart
 
       if template_action?(action)
         run_template_action(action, template_runner)
+      elsif file_action?(action)
+        run_file_action(action)
       else
         run_command_action(action)
       end
@@ -264,6 +277,7 @@ module Railstart
 
     def confirm_action?(action)
       return true unless action["prompt"]
+      return action.fetch("default", true) if @assume_yes
 
       @prompt.yes?(action["prompt"], default: action.fetch("default", true))
     end
@@ -283,6 +297,28 @@ module Railstart
       template_runner.apply(source, variables: variables)
     rescue TemplateError => e
       UI.warning("Post-action '#{action["name"]}' failed. #{e.message}")
+    end
+
+    def run_file_action(action)
+      UI.info(action["name"].to_s)
+      writer = FileWriter.new(app_path: Dir.pwd, app_name: @app_name)
+      result = writer.write(
+        path: action["path"],
+        content: action["content"],
+        source: action["source"],
+        overwrite: action.fetch("overwrite", false)
+      )
+      if result == :skipped
+        UI.warning("Skipped '#{action["path"]}' (already exists)")
+      else
+        UI.success("Created #{action["path"]}")
+      end
+    rescue Error, SystemCallError => e
+      UI.warning("Post-action '#{action["name"]}' failed. #{e.message}")
+    end
+
+    def file_action?(action)
+      action["type"].to_s == "file"
     end
 
     def template_variables(action)

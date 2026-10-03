@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# bin/ci — curated CI script written by Railstart.
+# Rails 8.1+ generates its own bin/ci; enable the setup_bin_ci post-action
+# only when the generated app does not already ship one.
+set -euo pipefail
+
+echo "== Running RuboCop =="
+bundle exec rubocop
+
+if bundle exec brakeman --version >/dev/null 2>&1; then
+  echo "== Running Brakeman =="
+  bundle exec brakeman --quiet --no-pager
+fi
+
+echo "== Running tests =="
+bin/rails test

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `railstart new --yes` (`-y`) fully headless mode that implies defaults, never prompts, requires `APP_NAME`, and uses post-action `default` values for prompted actions.
+- **File post-actions**: New `type: file` post-action that writes a file into the generated app from inline `content` or a `source` template (relative sources resolve against `config/templates/`), with `%{app_name}` interpolation, path traversal protection, and skip-on-existing `overwrite` semantics.
+- **Shipped templates**: New `config/templates/AGENTS.md` (opinionated Rails 8 guide for coding agents, written by the enabled `write_agents_md` action) and `config/templates/bin/ci` (curated CI script behind the opt-in `setup_bin_ci` action).
+
 ## [0.5.1] - 2026-07-26
 
 ### Changed

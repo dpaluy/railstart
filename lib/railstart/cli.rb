@@ -32,6 +32,7 @@ module Railstart
         puts "  railstart init                      # Create config files (optional)"
         puts "  railstart new my_app                # Interactive mode"
         puts "  railstart new my_app --default      # Use defaults"
+        puts "  railstart new my_app --yes          # Fully headless"
         puts "  railstart new my_app --preset api-only  # Use preset"
         puts ""
         puts "Run 'railstart help init' or 'railstart help new' for details"
@@ -122,17 +123,20 @@ module Railstart
 
       Modes:
         - Interactive (default): prompts for each question
+        - With default mode (--default or --yes): uses config defaults
         - With preset: uses preset config (different questions/defaults), interactive or non-interactive
 
       Examples:
         railstart new my_app                          # Interactive mode
-        railstart new my_app --default                # Non-interactive with default preset (if exists)
+        railstart new my_app --default                # Non-interactive with default preset (if exists), still confirms
+        railstart new my_app --yes                    # Fully headless (no prompts, requires APP_NAME)
         railstart new my_app --preset api-only        # Interactive with api-only preset config
-        railstart new my_app --preset api-only --default  # Non-interactive with api-only preset
+        railstart new my_app --preset api-only --yes  # Fully headless with api-only preset
 
       Presets are stored in: ~/.config/railstart/presets/*.yaml
     DESC
     option :default, type: :boolean, default: false, desc: "Use defaults non-interactively"
+    option :yes, type: :boolean, aliases: "-y", default: false, desc: "Headless mode: implies --default; no prompts"
     option :preset, type: :string, desc: "Preset name from ~/.config/railstart/presets/", banner: "NAME"
     #
     # @param app_name [String, nil] desired Rails app name, prompted if omitted
@@ -144,6 +148,8 @@ module Railstart
     #   Railstart::CLI.start(%w[new my_app --preset api-only])
     # @example Use default preset non-interactively
     #   Railstart::CLI.start(%w[new my_app --default])
+    # @example Run fully headless
+    #   Railstart::CLI.start(%w[new my_app --yes])
     def new(app_name = nil)
       preset_name = determine_preset_name
       preset_path = preset_name ? preset_file_for(preset_name) : nil
@@ -153,7 +159,8 @@ module Railstart
       generator = Generator.new(
         app_name,
         config: config,
-        use_defaults: options[:default]
+        use_defaults: options[:default] || options[:yes],
+        assume_yes: options[:yes]
       )
 
       generator.run
@@ -230,8 +237,8 @@ module Railstart
       # Explicit --preset flag takes priority
       return options[:preset] if options[:preset]
 
-      # --default maps to "default" preset
-      return "default" if options[:default]
+      # --default and --yes map to "default" preset
+      return "default" if options[:default] || options[:yes]
 
       nil
     end

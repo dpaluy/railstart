@@ -5,6 +5,64 @@ require "tmpdir"
 
 module Railstart
   class CLITest < Minitest::Test
+    def test_new_passes_yes_option_to_generator
+      config = { "questions" => [], "post_actions" => [] }
+      captured = nil
+      fake_generator = Minitest::Mock.new
+      fake_generator.expect :run, nil
+
+      generator_new = lambda do |app_name, **kwargs|
+        captured = { app_name: app_name, kwargs: kwargs }
+        fake_generator
+      end
+
+      Config.stub :load, config do
+        Generator.stub :new, generator_new do
+          Railstart::CLI.start(%w[new my_app --yes])
+        end
+      end
+
+      assert_equal "my_app", captured[:app_name]
+      assert_equal config, captured[:kwargs][:config]
+      assert_equal true, captured[:kwargs][:use_defaults]
+      assert_equal true, captured[:kwargs][:assume_yes]
+      fake_generator.verify
+    end
+
+    def test_new_parses_short_yes_alias
+      config = { "questions" => [], "post_actions" => [] }
+      captured_assume_yes = nil
+      fake_generator = Minitest::Mock.new
+      fake_generator.expect :run, nil
+
+      generator_new = lambda do |_app_name, **kwargs|
+        captured_assume_yes = kwargs[:assume_yes]
+        fake_generator
+      end
+
+      Config.stub :load, config do
+        Generator.stub :new, generator_new do
+          Railstart::CLI.start(%w[new my_app -y])
+        end
+      end
+
+      assert_equal true, captured_assume_yes
+      fake_generator.verify
+    end
+
+    def test_new_yes_without_app_name_exits_with_error
+      config = { "questions" => [], "post_actions" => [] }
+      out = nil
+
+      Config.stub :load, config do
+        out, = capture_io do
+          assert_raises(SystemExit) { Railstart::CLI.start(%w[new --yes]) }
+        end
+      end
+
+      assert_includes out, "APP_NAME is required when running in --yes mode"
+    end
+
     def test_preset_option_accepts_explicit_yaml_path
       Dir.mktmpdir do |dir|
         path = File.join(dir, "custom.yaml")

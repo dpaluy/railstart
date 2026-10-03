@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "tmpdir"
 
 module Railstart
   class GeneratorTest < Minitest::Test
@@ -92,6 +93,81 @@ module Railstart
 
       # Verify only confirmation was called (no question prompts)
       prompt.verify
+    end
+
+    def test_assume_yes_runs_headless_without_prompt_calls_and_honors_post_action_defaults
+      config = {
+        "questions" => [
+          {
+            "id" => "database",
+            "type" => "select",
+            "prompt" => "Which database?",
+            "choices" => [
+              { "name" => "SQLite", "value" => "sqlite3", "default" => true },
+              { "name" => "PostgreSQL", "value" => "postgresql" }
+            ],
+            "rails_flag" => "--database=%<value>s"
+          }
+        ],
+        "post_actions" => [
+          {
+            "id" => "run_default_true",
+            "name" => "Run default true",
+            "enabled" => true,
+            "prompt" => "Run default true action?",
+            "default" => true,
+            "command" => "echo run-default-true"
+          },
+          {
+            "id" => "skip_default_false",
+            "name" => "Skip default false",
+            "enabled" => true,
+            "prompt" => "Run default false action?",
+            "default" => false,
+            "command" => "echo skip-default-false"
+          }
+        ]
+      }
+
+      prompt = Object.new
+      prompt.define_singleton_method(:method_missing) do |method_name, *_args, **_kwargs, &_block|
+        raise "Unexpected prompt call: #{method_name}"
+      end
+      prompt.define_singleton_method(:respond_to_missing?) do |_method_name, _include_private = false|
+        true
+      end
+
+      generator = Generator.new("testapp", config: config, assume_yes: true, prompt: prompt)
+      system_calls = []
+
+      generator.stub :system, lambda { |*arguments|
+        system_calls << arguments
+        true
+      } do
+        Dir.stub :chdir, ->(_path, &block) { block&.call } do
+          output = capture_io { generator.run }
+          assert_match(/Configuration Summary/, output[0])
+        end
+      end
+
+      assert_equal ["rails", "new", "testapp", "--database=sqlite3"], system_calls[0]
+      assert_includes system_calls[1], "echo run-default-true"
+      refute(system_calls.any? { |arguments| arguments == ["echo skip-default-false"] })
+    end
+
+    def test_assume_yes_requires_app_name_and_never_prompts
+      prompt = Object.new
+      prompt.define_singleton_method(:method_missing) do |method_name, *_args, **_kwargs, &_block|
+        raise "Unexpected prompt call: #{method_name}"
+      end
+      prompt.define_singleton_method(:respond_to_missing?) do |_method_name, _include_private = false|
+        true
+      end
+
+      generator = Generator.new(nil, config: @config, assume_yes: true, prompt: prompt)
+
+      error = assert_raises(Railstart::Error) { generator.run }
+      assert_equal "APP_NAME is required when running in --yes mode", error.message
     end
 
     def test_interactive_mode_asks_questions_and_confirms
@@ -287,6 +363,125 @@ module Railstart
       end
 
       assert_equal [{ source: "template.rb", variables: expected_variables }], template_runner.calls
+    end
+
+    def test_file_post_action_writes_into_app_directory
+      config = {
+        "questions" => [],
+        "post_actions" => [
+          {
+            "id" => "write_agents_md",
+            "name" => "Create AGENTS.md",
+            "type" => "file",
+            "enabled" => true,
+            "path" => "AGENTS.md",
+            "content" => "# %{app_name} guide" # rubocop:disable Style/FormatStringToken -- documented interpolation style
+          },
+          {
+            "id" => "write_nested",
+            "name" => "Create nested file",
+            "type" => "file",
+            "enabled" => true,
+            "path" => "bin/ci",
+            "content" => "#!/usr/bin/env bash\n"
+          }
+        ]
+      }
+
+      Dir.mktmpdir do |dir|
+        FileUtils.mkdir_p(File.join(dir, "testapp"))
+        generator = Generator.new("testapp", config: config, use_defaults: true, prompt: Minitest::Mock.new)
+        generator.instance_variable_set(:@answers, {})
+
+        Dir.chdir(dir) do
+          capture_io { generator.send(:run_post_actions) }
+        end
+
+        assert_equal "# testapp guide", File.read(File.join(dir, "testapp", "AGENTS.md"))
+        assert_equal "#!/usr/bin/env bash\n", File.read(File.join(dir, "testapp", "bin", "ci"))
+      end
+    end
+
+    def test_file_post_action_skips_existing_file_without_overwrite
+      config = {
+        "questions" => [],
+        "post_actions" => [
+          {
+            "id" => "write_agents_md",
+            "name" => "Create AGENTS.md",
+            "type" => "file",
+            "enabled" => true,
+            "path" => "AGENTS.md",
+            "content" => "new",
+            "overwrite" => false
+          }
+        ]
+      }
+
+      Dir.mktmpdir do |dir|
+        app_dir = File.join(dir, "testapp")
+        FileUtils.mkdir_p(app_dir)
+        File.write(File.join(app_dir, "AGENTS.md"), "original")
+        generator = Generator.new("testapp", config: config, use_defaults: true, prompt: Minitest::Mock.new)
+        generator.instance_variable_set(:@answers, {})
+
+        output = nil
+        Dir.chdir(dir) do
+          output = capture_io { generator.send(:run_post_actions) }
+        end
+
+        assert_equal "original", File.read(File.join(app_dir, "AGENTS.md"))
+        assert_match(/already exists/, output[0])
+      end
+    end
+
+    def test_file_post_action_respects_assume_yes_defaults
+      config = {
+        "questions" => [],
+        "post_actions" => [
+          {
+            "id" => "write_agents_md",
+            "name" => "Create AGENTS.md",
+            "type" => "file",
+            "enabled" => true,
+            "prompt" => "Create AGENTS.md for coding agents?",
+            "default" => true,
+            "path" => "AGENTS.md",
+            "content" => "# %{app_name}" # rubocop:disable Style/FormatStringToken -- documented interpolation style
+          },
+          {
+            "id" => "skip_me",
+            "name" => "Skipped file",
+            "type" => "file",
+            "enabled" => true,
+            "prompt" => "Write optional file?",
+            "default" => false,
+            "path" => "OPTIONAL.md",
+            "content" => "nope"
+          }
+        ]
+      }
+
+      prompt = Object.new
+      prompt.define_singleton_method(:method_missing) do |method_name, *_args, **_kwargs, &_block|
+        raise "Unexpected prompt call: #{method_name}"
+      end
+      prompt.define_singleton_method(:respond_to_missing?) do |_method_name, _include_private = false|
+        true
+      end
+
+      Dir.mktmpdir do |dir|
+        FileUtils.mkdir_p(File.join(dir, "testapp"))
+        generator = Generator.new("testapp", config: config, assume_yes: true, prompt: prompt)
+        generator.instance_variable_set(:@answers, {})
+
+        Dir.chdir(dir) do
+          capture_io { generator.send(:run_post_actions) }
+        end
+
+        assert_equal "# testapp", File.read(File.join(dir, "testapp", "AGENTS.md"))
+        refute File.exist?(File.join(dir, "testapp", "OPTIONAL.md"))
+      end
     end
 
     def test_multi_select_defaults_transform_values_to_names
