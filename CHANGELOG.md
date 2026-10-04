@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-03
+
 ### Added
 - `railstart new --yes` (`-y`) fully headless mode that implies defaults, never prompts, requires `APP_NAME`, and uses post-action `default` values for prompted actions.
 - **File post-actions**: New `type: file` post-action that writes a file into the generated app from inline `content` or a `source` template (relative sources resolve against `config/templates/`), with `%{app_name}` interpolation, path traversal protection, and skip-on-existing `overwrite` semantics.
