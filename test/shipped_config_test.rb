@@ -22,6 +22,25 @@ module Railstart
       refute_includes command, "--css=none"
     end
 
+    def test_builtin_file_post_actions_reference_shipped_templates
+      config = Config.load(user_path: nil)
+
+      agents = config["post_actions"].find { |action| action["id"] == "write_agents_md" }
+      assert_equal "file", agents["type"]
+      assert_equal "AGENTS.md", agents["path"]
+      assert_equal "AGENTS.md", agents["source"]
+      assert agents["enabled"]
+      refute agents["overwrite"]
+
+      bin_ci = config["post_actions"].find { |action| action["id"] == "setup_bin_ci" }
+      assert_equal "file", bin_ci["type"]
+      assert_equal "bin/ci", bin_ci["path"]
+      refute bin_ci["enabled"]
+
+      assert File.exist?(File.join(FileWriter::TEMPLATES_DIR, "AGENTS.md"))
+      assert File.executable?(File.join(FileWriter::TEMPLATES_DIR, "bin", "ci"))
+    end
+
     private
 
     def default_answers(config)

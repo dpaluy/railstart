@@ -126,6 +126,29 @@ questions:
         rails_flag: "--skip-test"
 
 post_actions:
+  - id: write_agents_md
+    name: "Create AGENTS.md for coding agents"
+    type: file
+    enabled: true
+    prompt: "Create AGENTS.md for coding agents?"
+    default: true
+    path: AGENTS.md
+    source: AGENTS.md
+    overwrite: false
+
+  # Opt-in: Rails 8.1+ already generates bin/ci, so this action stays
+  # disabled by default and never overwrites an existing script. Enable it
+  # to have Railstart write a curated CI script (keeps its executable bit).
+  - id: setup_bin_ci
+    name: "Create bin/ci script"
+    type: file
+    enabled: false
+    prompt: "Create bin/ci script?"
+    default: false
+    path: bin/ci
+    source: bin/ci
+    overwrite: false
+
   - id: init_git
     name: "Initialize git repository"
     enabled: true

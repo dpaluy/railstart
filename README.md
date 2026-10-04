@@ -94,7 +94,8 @@ Presets are configuration overlays that let you define different defaults and ev
 **Modes:**
 - **Interactive** (default): prompts for each question from the config schema
 - **With --default**: skips questions, loads "default" preset, shows summary and confirms
-- **With --preset**: loads specified preset as config overlay (can be interactive or with --default)
+- **With --yes / -y**: fully headless, implies `--default`, requires `APP_NAME`, skips all confirmations (post-action prompts follow each action's `default`)
+- **With --preset**: loads specified preset as config overlay (can be interactive or with --default/--yes)
 
 ```bash
 # Interactive mode (builtin defaults)
@@ -104,11 +105,14 @@ railstart new my_app
 # Note: --default automatically loads the "default" preset (user or gem)
 railstart new my_app --default
 
+# Fully headless mode (implies --default, no prompts at all)
+railstart new my_app --yes
+
 # Interactive with custom preset
 railstart new my_app --preset api-only
 
-# Non-interactive with custom preset
-railstart new my_app --preset api-only --default
+# Fully headless with custom preset
+railstart new my_app --preset api-only --yes
 ```
 
 **Create custom presets** at `~/.config/railstart/presets/my-preset.yaml`:
@@ -347,6 +351,33 @@ Key differences from `command` actions:
 - Set `type: template` and provide a `source` (local path or URL). Railstart streams that template into Rails' own `apply` helper, so all standard DSL commands (`gem`, `route`, `after_bundle`, etc.) are available.
 - `variables` is optional; when present, its keys become instance variables accessible from the template (e.g., `@app_label`). Railstart always exposes `@app_name` and `@answers` for convenience.
 - Template actions still honor `prompt`, `default`, and `if` just like command actions. Keep remote templates disabled by default unless you explicitly trust them.
+
+#### File Post-Actions
+
+For lightweight files (AGENTS.md, scripts, dotfiles) you can skip Rails templates entirely and write a file directly into the generated app. File actions never load Rails in-process.
+
+```yaml
+post_actions:
+  - id: write_agents_md
+    name: "Create AGENTS.md for coding agents"
+    type: file
+    enabled: true
+    prompt: "Create AGENTS.md for coding agents?"
+    default: true
+    path: AGENTS.md              # required, relative to the app root
+    source: AGENTS.md            # template file (or use `content:` for an inline string)
+    overwrite: false             # optional; skip instead of overwriting existing files
+```
+
+Key differences from `template` actions:
+
+- `path` is required and must stay inside the app (absolute, `~`-prefixed, and `..` paths are rejected).
+- Provide exactly one of `content` (inline string) or `source` (file path). Relative `source` paths resolve against the gem's `config/templates/` directory; absolute or `~/` paths are used as-is.
+- Content supports `%{app_name}` interpolation, like `%{value}` in `rails_flag`. Other `%` sequences pass through unchanged.
+- `overwrite` defaults to `false`: existing files are skipped with a warning. Source-based writes keep the source file's executable bit.
+- `prompt`, `default`, and `if` behave exactly like command actions.
+
+The built-in config ships two file actions: `write_agents_md` (enabled by default, writes an opinionated AGENTS.md for coding agents) and `setup_bin_ci` (opt-in; Rails 8.1+ already generates `bin/ci`).
 
 ## Development
 

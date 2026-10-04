@@ -375,6 +375,124 @@ module Railstart
       end
     end
 
+    def test_file_post_action_validation_passes
+      Dir.mktmpdir do |dir|
+        builtin = {
+          "post_actions" => [
+            {
+              "id" => "write_agents_md",
+              "type" => "file",
+              "enabled" => true,
+              "path" => "AGENTS.md",
+              "source" => "AGENTS.md"
+            },
+            {
+              "id" => "write_note",
+              "type" => "file",
+              "enabled" => true,
+              "path" => "docs/NOTE.md",
+              "content" => "# %{app_name}", # rubocop:disable Style/FormatStringToken
+              "overwrite" => true
+            }
+          ]
+        }
+
+        assert merged_config(dir, builtin: builtin)
+      end
+    end
+
+    def test_file_post_action_missing_path_raises
+      Dir.mktmpdir do |dir|
+        action = {
+          "id" => "write_agents_md",
+          "type" => "file",
+          "enabled" => true,
+          "source" => "AGENTS.md"
+        }
+
+        error = assert_raises(ConfigValidationError) do
+          merged_config(dir, builtin: { "post_actions" => [action] })
+        end
+        assert_includes error.message, "missing a path"
+      end
+    end
+
+    def test_file_post_action_missing_content_and_source_raises
+      Dir.mktmpdir do |dir|
+        action = {
+          "id" => "write_agents_md",
+          "type" => "file",
+          "enabled" => true,
+          "path" => "AGENTS.md"
+        }
+
+        error = assert_raises(ConfigValidationError) do
+          merged_config(dir, builtin: { "post_actions" => [action] })
+        end
+        assert_includes error.message, "missing content or source"
+      end
+    end
+
+    def test_file_post_action_with_both_content_and_source_raises
+      Dir.mktmpdir do |dir|
+        action = {
+          "id" => "write_agents_md",
+          "type" => "file",
+          "enabled" => true,
+          "path" => "AGENTS.md",
+          "content" => "inline",
+          "source" => "AGENTS.md"
+        }
+
+        error = assert_raises(ConfigValidationError) do
+          merged_config(dir, builtin: { "post_actions" => [action] })
+        end
+        assert_includes error.message, "both content and source"
+      end
+    end
+
+    def test_file_post_action_empty_content_is_valid
+      Dir.mktmpdir do |dir|
+        action = {
+          "id" => "write_placeholder",
+          "type" => "file",
+          "enabled" => true,
+          "path" => ".keep",
+          "content" => ""
+        }
+
+        assert merged_config(dir, builtin: { "post_actions" => [action] })
+      end
+    end
+
+    def test_file_post_action_unsafe_path_raises
+      Dir.mktmpdir do |dir|
+        ["/etc/passwd", "../outside.md", "docs/../../evil.md", "~/secret.md", "C:\\evil.md"].each do |path|
+          action = {
+            "id" => "write_file",
+            "type" => "file",
+            "enabled" => true,
+            "path" => path,
+            "content" => "nope"
+          }
+
+          error = assert_raises(ConfigValidationError) do
+            merged_config(dir, builtin: { "post_actions" => [action] })
+          end
+          assert_includes error.message, "unsafe file path"
+        end
+      end
+    end
+
+    def test_post_action_entry_must_be_a_hash
+      Dir.mktmpdir do |dir|
+        error = assert_raises(ConfigValidationError) do
+          merged_config(dir, builtin: { "post_actions" => ["not-a-hash"] })
+        end
+        assert_includes error.message, "post_actions entry at index 0 must be a Hash"
+      end
+    end
+
     def test_template_post_action_validation_passes
       Dir.mktmpdir do |dir|
         builtin = {

@@ -157,7 +157,7 @@ module Railstart
       end
 
       def fetch_id(entry)
-        return unless entry.respond_to?(:[])
+        return unless entry.is_a?(Hash)
 
         entry["id"] || entry[:id]
       end
@@ -406,9 +406,36 @@ module Railstart
             end
           end
           issues
+        when "file"
+          validate_file_action(entry, identifier, enabled)
         else
           ["Post-action #{identifier} has unsupported type '#{action_type}'"]
         end
+      end
+
+      def validate_file_action(entry, identifier, enabled)
+        issues = []
+        path = value_for(entry, "path")
+        if enabled && (path.nil? || path.to_s.strip.empty?)
+          issues << "Post-action #{identifier} is a file but missing a path"
+        elsif path && !path.to_s.strip.empty? && unsafe_file_path?(path.to_s)
+          issues << "Post-action #{identifier} has unsafe file path #{path.inspect}"
+        end
+
+        if enabled
+          has_content = key_present?(entry, "content") && !value_for(entry, "content").nil?
+          has_source = !value_for(entry, "source").to_s.strip.empty?
+          if has_content && has_source
+            issues << "Post-action #{identifier} is a file but defines both content and source"
+          elsif !has_content && !has_source
+            issues << "Post-action #{identifier} is a file but missing content or source"
+          end
+        end
+        issues
+      end
+
+      def unsafe_file_path?(path)
+        path.start_with?("/", "~") || path.match?(%r{\A[A-Za-z]:[\\/]}) || path.split(%r{[/\\]+}).include?("..")
       end
 
       def validate_post_action_condition(entry, identifier, question_ids)
