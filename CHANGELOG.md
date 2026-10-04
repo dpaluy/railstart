@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Moved the agent skill from `.agents/skills/railstart-coder/` to `skills/railstart-coder/` so it is installable via `npx skills`.
+
 ## [0.6.0] - 2026-10-03
 
 ### Added
