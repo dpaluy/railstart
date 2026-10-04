@@ -127,6 +127,45 @@ module Railstart
       end
     end
 
+    def test_rejects_write_through_symlinked_directory
+      Dir.mktmpdir do |dir|
+        outside = Dir.mktmpdir
+        File.symlink(outside, File.join(dir, "docs"))
+        writer = FileWriter.new(app_path: dir, app_name: "blog")
+
+        error = assert_raises(Railstart::Error) do
+          writer.write(path: "docs/note.txt", content: "x")
+        end
+        assert_includes error.message, "resolves outside the app directory"
+        refute File.exist?(File.join(outside, "note.txt"))
+      end
+    end
+
+    def test_rejects_write_through_dangling_symlink_target
+      Dir.mktmpdir do |dir|
+        outside = File.join(Dir.mktmpdir, "stolen.txt")
+        File.symlink(outside, File.join(dir, "note.txt"))
+        writer = FileWriter.new(app_path: dir, app_name: "blog")
+
+        error = assert_raises(Railstart::Error) do
+          writer.write(path: "note.txt", content: "x", overwrite: false)
+        end
+        assert_includes error.message, "refusing to write through a symlink"
+        refute File.exist?(outside)
+      end
+    end
+
+    def test_treats_empty_source_as_absent_and_writes_content
+      Dir.mktmpdir do |dir|
+        writer = FileWriter.new(app_path: dir, app_name: "blog")
+
+        result = writer.write(path: "AGENTS.md", content: "custom guide", source: "")
+
+        assert_equal :written, result
+        assert_equal "custom guide", File.read(File.join(dir, "AGENTS.md"))
+      end
+    end
+
     def test_passes_literal_percent_signs_through_unchanged
       Dir.mktmpdir do |dir|
         writer = FileWriter.new(app_path: dir, app_name: "blog")

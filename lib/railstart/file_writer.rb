@@ -39,12 +39,17 @@ module Railstart
     # @raise [Railstart::Error] when the target path escapes the app, the
     #   source escapes config/templates, or the source file cannot be read
     def write(path:, content: nil, source: nil, overwrite: false)
+      source = nil if source.to_s.strip.empty?
       target = safe_target(path)
+      if File.symlink?(target)
+        raise Error, "Unsafe file post-action path #{path.inspect}: refusing to write through a symlink"
+      end
       return :skipped if File.exist?(target) && !overwrite
 
       source_path = resolve_source(source) if source
       body = interpolate(source_path ? read_source(source_path) : content.to_s)
       FileUtils.mkdir_p(File.dirname(target))
+      ensure_resolved_within_app!(target, path)
       File.write(target, body)
       FileUtils.chmod(File.stat(source_path).mode & 0o777, target) if source_path
       :written
@@ -58,6 +63,17 @@ module Railstart
       return target if target.start_with?("#{root}#{File::SEPARATOR}")
 
       raise Error, "Unsafe file post-action path #{path.inspect}: must stay inside the app directory"
+    end
+
+    # Lexical checks cannot see directory symlinks inside the app. After
+    # mkdir_p, compare resolved paths so a symlinked directory cannot
+    # redirect the write outside the app.
+    def ensure_resolved_within_app!(target, path)
+      root = File.realpath(@app_path)
+      parent = File.realpath(File.dirname(target))
+      return if parent == root || parent.start_with?("#{root}#{File::SEPARATOR}")
+
+      raise Error, "Unsafe file post-action path #{path.inspect}: resolves outside the app directory"
     end
 
     def resolve_source(source)
