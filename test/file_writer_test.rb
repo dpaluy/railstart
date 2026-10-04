@@ -141,6 +141,31 @@ module Railstart
       end
     end
 
+    def test_rejects_nested_write_through_symlinked_directory_without_creating_dirs
+      Dir.mktmpdir do |dir|
+        outside = Dir.mktmpdir
+        File.symlink(outside, File.join(dir, "docs"))
+        writer = FileWriter.new(app_path: dir, app_name: "blog")
+
+        error = assert_raises(Railstart::Error) do
+          writer.write(path: "docs/new/nested/note.txt", content: "x")
+        end
+        assert_includes error.message, "resolves outside the app directory"
+        refute File.exist?(File.join(outside, "new")), "mkdir_p created directories outside the app"
+      end
+    end
+
+    def test_creates_nested_directories_inside_the_app
+      Dir.mktmpdir do |dir|
+        writer = FileWriter.new(app_path: dir, app_name: "blog")
+
+        result = writer.write(path: "docs/new/nested/note.txt", content: "x")
+
+        assert_equal :written, result
+        assert_equal "x", File.read(File.join(dir, "docs/new/nested/note.txt"))
+      end
+    end
+
     def test_rejects_write_through_dangling_symlink_target
       Dir.mktmpdir do |dir|
         outside = File.join(Dir.mktmpdir, "stolen.txt")
