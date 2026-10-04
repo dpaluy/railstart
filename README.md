@@ -455,7 +455,7 @@ Merging is by `id` for both `questions` and `post_actions`, allowing surgical ov
 
 ## AI Agent Skill
 
-Railstart ships with an agent skill at `.agents/skills/railstart-coder/` for Codex- and Claude-style coding agents. The skill is structured as a lean `SKILL.md` plus focused reference files covering CLI usage, config layering, preset authoring, template post-actions, and gem development.
+Railstart ships with an agent skill at `skills/railstart-coder/` for Codex- and Claude-style coding agents, installable with `npx skills`. The skill is structured as a lean `SKILL.md` plus focused reference files covering CLI usage, config layering, preset authoring, template post-actions, and gem development.
 
 ## Contributing
 

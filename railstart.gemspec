@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   gemspec = File.basename(__FILE__)
   excluded_prefixes = %w[
     bin/ Gemfile .gitignore .ruby-version test/ .github/ .rubocop.yml
-    docs/ .agents/ .omx/ examples/
+    docs/ skills/ .omx/ examples/
   ]
   spec.files = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL) do |ls|
     ls.readlines("\x0", chomp: true).reject do |f|
